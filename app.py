@@ -1,15 +1,15 @@
 import base64
 import json
 import os
-import urllib.request
 import urllib.error
+import urllib.request
 
 from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-2.5-flash"
 
 
 @app.route("/")
@@ -23,6 +23,7 @@ def health():
         "status": "running",
         "app": "Movie_AI",
         "gemini_key": bool(GEMINI_API_KEY),
+        "gemini_model": GEMINI_MODEL,
     }
 
 
@@ -44,12 +45,10 @@ def generate():
     image2_data = base64.b64encode(photo2.read()).decode("utf-8")
 
     prompt_text = f"""
-You are Movie_AI, an expert AI video director.
+You are Movie_AI, a professional AI video director.
 
-Analyze the two uploaded reference photos and create a high-quality English prompt for {service} image-to-video generation.
-
-Goal:
-Create a natural cinematic video using the two people from the uploaded photos.
+Analyze the two uploaded reference photos carefully.
+Create one polished English prompt for {service} image-to-video generation.
 
 Selected scene:
 {scene}
@@ -57,22 +56,27 @@ Selected scene:
 Selected mood:
 {mood}
 
-Requirements:
-- Keep both identities and faces consistent with the reference photos.
-- Describe both people naturally based on the photos.
-- Make them appear naturally together in one scene.
-- Use realistic body movement.
-- Use natural expressions and eye contact.
-- Avoid distorted faces, extra fingers, warped hands, strange bodies, identity changes, or unnatural motion.
-- Add cinematic camera direction.
-- Add lighting, atmosphere, background, and motion details.
-- Make it suitable for a 5 to 10 second video.
-- Output only the final English prompt.
+Write the final prompt with:
+- A natural description of both people based on the photos
+- Their expressions, clothing, pose, and relationship-like interaction
+- A cinematic 5 to 10 second scene
+- Realistic motion
+- Camera movement
+- Lighting
+- Background
+- Atmosphere
+- Negative instructions to avoid face distortion, extra fingers, warped hands, identity changes, strange bodies, and unnatural motion
+
+Important:
+Keep both identities consistent with the reference photos.
+Make the two people appear naturally together in the same scene.
+Output only the final English prompt.
 """
 
     payload = {
         "contents": [
             {
+                "role": "user",
                 "parts": [
                     {"text": prompt_text},
                     {
@@ -87,13 +91,18 @@ Requirements:
                             "data": image2_data,
                         }
                     },
-                ]
+                ],
             }
-        ]
+        ],
+        "generationConfig": {
+            "temperature": 0.8,
+            "topP": 0.95,
+            "maxOutputTokens": 1200,
+        },
     }
 
     url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        "https://generativelanguage.googleapis.com/v1beta/models/"
         f"{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
     )
 
@@ -105,7 +114,7 @@ Requirements:
             method="POST",
         )
 
-        with urllib.request.urlopen(req, timeout=60) as response:
+        with urllib.request.urlopen(req, timeout=90) as response:
             data = json.loads(response.read().decode("utf-8"))
 
         text = (

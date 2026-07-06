@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie_AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+<h1>🎬 Movie_AI</h1>
+
+<div class="card">
+
+<h2>写真①</h2>
+<input type="file" id="photo1" accept="image/*">
+
+<h2>写真②</h2>
+<input type="file" id="photo2" accept="image/*">
+
+<h2>シーン</h2>
+
+<select id="scene">
+
+<option>海辺デート</option>
+<option>夜景デート</option>
+<option>映画風</option>
+<option>旅行</option>
+<option>韓国ドラマ</option>
+
+</select>
+
+<button id="generate">
+プロンプト生成
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>生成結果</h2>
+
+<textarea id="result" rows="10"></textarea>
+
+</div>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>

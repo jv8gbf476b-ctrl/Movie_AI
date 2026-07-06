@@ -3,52 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie_AI</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Movie_AI Ver.1</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
-<div class="container">
+<div class="app">
+    <header>
+        <h1>🎬 Movie_AI</h1>
+        <p>写真から動画生成AI用のプロンプトを作る</p>
+    </header>
 
-<h1>🎬 Movie_AI</h1>
+    <main>
+        <section class="card">
+            <h2>📷 写真</h2>
 
-<div class="card">
+            <label>写真①</label>
+            <input type="file" id="photo1" accept="image/*">
+            <img id="preview1" class="preview" alt="写真①プレビュー">
 
-<h2>写真①</h2>
-<input type="file" id="photo1" accept="image/*">
+            <label>写真②</label>
+            <input type="file" id="photo2" accept="image/*">
+            <img id="preview2" class="preview" alt="写真②プレビュー">
+        </section>
 
-<h2>写真②</h2>
-<input type="file" id="photo2" accept="image/*">
+        <section class="card">
+            <h2>🎭 演出</h2>
 
-<h2>シーン</h2>
+            <label>シーン</label>
+            <select id="scene">
+                <option value="romantic beach date, walking hand in hand near the ocean at sunset">海辺デート</option>
+                <option value="romantic night view date, standing close together under city lights">夜景デート</option>
+                <option value="cute cafe date, smiling and talking naturally across a small table">カフェデート</option>
+                <option value="amusement park date, walking together with joyful expressions and colorful lights">遊園地デート</option>
+                <option value="cinematic movie scene, emotional couple moment with dramatic lighting">映画風</option>
+                <option value="Korean drama style romantic scene, soft lighting and emotional eye contact">韓国ドラマ風</option>
+                <option value="travel vlog style romantic scene, walking together in a beautiful travel destination">旅行風</option>
+            </select>
 
-<select id="scene">
+            <label>雰囲気</label>
+            <select id="mood">
+                <option value="romantic, cinematic, soft lighting">ロマンチック</option>
+                <option value="cute, natural, warm atmosphere">かわいい自然体</option>
+                <option value="emotional, dramatic, movie-like">感動的</option>
+                <option value="fun, playful, bright mood">楽しい</option>
+                <option value="luxury, elegant, premium film style">高級映画風</option>
+            </select>
 
-<option>海辺デート</option>
-<option>夜景デート</option>
-<option>映画風</option>
-<option>旅行</option>
-<option>韓国ドラマ</option>
+            <label>動画サービス</label>
+            <select id="service">
+                <option value="Kling">Kling</option>
+                <option value="Runway">Runway</option>
+                <option value="Pika">Pika</option>
+            </select>
 
-</select>
+            <button id="generateBtn">プロンプト生成</button>
+        </section>
 
-<button id="generate">
-プロンプト生成
-</button>
-
+        <section class="card">
+            <h2>🧠 生成結果</h2>
+            <textarea id="result" placeholder="ここに英語プロンプトが出るよ"></textarea>
+            <button id="copyBtn" class="subButton">コピー</button>
+        </section>
+    </main>
 </div>
 
-<div class="card">
-
-<h2>生成結果</h2>
-
-<textarea id="result" rows="10"></textarea>
-
-</div>
-
-</div>
-
-<script src="{{ url_for('static', filename='script.js') }}"></script>
-
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

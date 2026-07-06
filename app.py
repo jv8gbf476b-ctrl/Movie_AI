@@ -32,9 +32,13 @@ def generate():
 
     photo1 = request.files.get("photo1")
     photo2 = request.files.get("photo2")
+
     scene = request.form.get("scene", "")
     mood = request.form.get("mood", "")
     service = request.form.get("service", "Kling")
+    romance = request.form.get("romance", "none")
+    camera = request.form.get("camera", "cinematic")
+    director = request.form.get("director", "cinematic")
 
     if not photo1 or not photo2:
         return jsonify({"error": "写真を2枚選んでください。"}), 400
@@ -48,29 +52,32 @@ def generate():
         director_prompt = f"""
 You are Movie_AI, a professional AI video director.
 
-Analyze the two uploaded reference photos carefully and create one polished English prompt for {service} image-to-video generation.
+Analyze the two uploaded reference photos carefully and create one highly detailed English prompt for {service} image-to-video generation.
 
-Selected scene:
-{scene}
+User settings:
+Scene: {scene}
+Mood: {mood}
+Romance action: {romance}
+Camera style: {camera}
+Director level: {director}
 
-Selected mood:
-{mood}
+Create a cinematic 5 to 10 second video prompt.
 
-Create a 5 to 10 second cinematic video prompt.
-
-Include:
-- Natural description of both people based on the photos
-- Their clothing, hairstyle, expression, and posture
-- A natural couple-like interaction
-- Camera movement
-- Lighting
-- Background
-- Atmosphere
-- Realistic motion
-- Instructions to keep faces and identities consistent
-- Negative instructions to avoid distorted faces, extra fingers, warped hands, strange bodies, identity changes, and unnatural movement
+Rules:
+- Keep both identities and faces consistent with the reference photos.
+- Describe both people naturally based on the photos.
+- Include hairstyle, clothing, expression, posture, and visible details.
+- Make the two people appear naturally together in the same scene.
+- The romance must be elegant, cinematic, and non-explicit.
+- If romance is "gentle kiss", describe a romantic movie-style kiss, not explicit adult content.
+- Add natural body movement and emotional facial expressions.
+- Add camera movement based on the selected camera style.
+- Add lighting, background, atmosphere, depth of field, and realistic motion.
+- Optimize the wording for {service}.
+- Include negative instructions to avoid distorted faces, extra fingers, warped hands, strange bodies, identity changes, duplicated people, and unnatural movement.
 
 Output only the final English prompt.
+Make the prompt rich, polished, and ready to paste into {service}.
 """
 
         response = client.models.generate_content(
@@ -92,9 +99,9 @@ Output only the final English prompt.
                 )
             ],
             config=types.GenerateContentConfig(
-                temperature=0.8,
+                temperature=0.9,
                 top_p=0.95,
-                max_output_tokens=1200,
+                max_output_tokens=1800,
             ),
         )
 

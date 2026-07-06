@@ -1,0 +1,55 @@
+body{
+    background:#111;
+    color:#fff;
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+    margin:0;
+    padding:20px;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+}
+
+.card{
+    background:#222;
+    border-radius:18px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+input,
+select,
+textarea{
+    width:100%;
+    padding:14px;
+    margin:10px 0 20px;
+    border:none;
+    border-radius:12px;
+    box-sizing:border-box;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    padding:16px;
+    border:none;
+    border-radius:12px;
+    background:#ff4081;
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+}
+
+button:hover{
+    opacity:0.9;
+    cursor:pointer;
+}
+
+h1{
+    text-align:center;
+}
+
+textarea{
+    resize:vertical;
+}

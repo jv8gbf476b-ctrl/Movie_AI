@@ -1,55 +1,93 @@
-body{
-    background:#111;
-    color:#fff;
-    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-    margin:0;
-    padding:20px;
+* {
+    box-sizing: border-box;
 }
 
-.container{
-    max-width:700px;
-    margin:auto;
+body {
+    margin: 0;
+    padding: 18px;
+    background: #101014;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
 }
 
-.card{
-    background:#222;
-    border-radius:18px;
-    padding:20px;
-    margin-bottom:20px;
+.app {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    margin: 10px 0 6px;
+    font-size: 32px;
+}
+
+header p {
+    margin: 0;
+    color: #bdbdc7;
+    font-size: 14px;
+}
+
+.card {
+    background: #1b1b23;
+    border-radius: 20px;
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.card h2 {
+    margin-top: 0;
+    font-size: 20px;
+}
+
+label {
+    display: block;
+    margin: 14px 0 8px;
+    font-weight: 700;
 }
 
 input,
 select,
-textarea{
-    width:100%;
-    padding:14px;
-    margin:10px 0 20px;
-    border:none;
-    border-radius:12px;
-    box-sizing:border-box;
-    font-size:16px;
+textarea {
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 16px;
 }
 
-button{
-    width:100%;
-    padding:16px;
-    border:none;
-    border-radius:12px;
-    background:#ff4081;
-    color:white;
-    font-size:18px;
-    font-weight:bold;
+textarea {
+    min-height: 220px;
+    resize: vertical;
+    line-height: 1.5;
 }
 
-button:hover{
-    opacity:0.9;
-    cursor:pointer;
+.preview {
+    display: none;
+    width: 100%;
+    margin-top: 12px;
+    border-radius: 16px;
 }
 
-h1{
-    text-align:center;
+button {
+    width: 100%;
+    border: none;
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 18px;
+    background: #ff4f8b;
+    color: white;
+    font-size: 18px;
+    font-weight: 800;
 }
 
-textarea{
-    resize:vertical;
+.subButton {
+    background: #3a3a46;
+}
+
+button:active {
+    transform: scale(0.98);
 }

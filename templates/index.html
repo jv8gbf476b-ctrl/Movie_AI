@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie_AI Ver.1</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Movie_AI Ver.2</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2">
 </head>
 <body>
 
@@ -57,17 +57,17 @@
                 <option value="Pika">Pika</option>
             </select>
 
-            <button id="generateBtn">プロンプト生成</button>
+            <button id="generateBtn">AIプロンプト生成</button>
         </section>
 
         <section class="card">
             <h2>🧠 生成結果</h2>
-            <textarea id="result" placeholder="ここに英語プロンプトが出るよ"></textarea>
+            <textarea id="result" placeholder="ここにAI生成プロンプトが出るよ"></textarea>
             <button id="copyBtn" class="subButton">コピー</button>
         </section>
     </main>
 </div>
 
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}?v=2"></script>
 </body>
 </html>

@@ -10,12 +10,14 @@ const copyBtn = document.getElementById("copyBtn");
 const scene = document.getElementById("scene");
 const mood = document.getElementById("mood");
 const service = document.getElementById("service");
+const romance = document.getElementById("romance");
+const camera = document.getElementById("camera");
+const director = document.getElementById("director");
 
 const result = document.getElementById("result");
 
 function preview(fileInput, image) {
     const file = fileInput.files[0];
-
     if (!file) return;
 
     const reader = new FileReader();
@@ -44,7 +46,7 @@ generateBtn.addEventListener("click", async () => {
 
     generateBtn.innerText = "生成中...";
     generateBtn.disabled = true;
-    result.value = "Geminiが写真を解析してプロンプトを作成中...";
+    result.value = "Geminiが写真を解析して、映画監督モードでプロンプトを作成中...";
 
     const formData = new FormData();
     formData.append("photo1", photo1.files[0]);
@@ -52,6 +54,9 @@ generateBtn.addEventListener("click", async () => {
     formData.append("scene", scene.value);
     formData.append("mood", mood.value);
     formData.append("service", service.value);
+    formData.append("romance", romance.value);
+    formData.append("camera", camera.value);
+    formData.append("director", director.value);
 
     try {
         const response = await fetch("/generate", {
@@ -71,7 +76,7 @@ generateBtn.addEventListener("click", async () => {
     } catch (error) {
         result.value = "通信エラー:\n" + error.message;
     } finally {
-        generateBtn.innerText = "プロンプト生成";
+        generateBtn.innerText = "AIプロンプト生成";
         generateBtn.disabled = false;
     }
 });

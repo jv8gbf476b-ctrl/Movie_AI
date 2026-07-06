@@ -14,7 +14,6 @@ const service = document.getElementById("service");
 const result = document.getElementById("result");
 
 function preview(fileInput, image) {
-
     const file = fileInput.files[0];
 
     if (!file) return;
@@ -22,61 +21,62 @@ function preview(fileInput, image) {
     const reader = new FileReader();
 
     reader.onload = function (e) {
-
         image.src = e.target.result;
         image.style.display = "block";
-
     };
 
     reader.readAsDataURL(file);
-
 }
 
 photo1.addEventListener("change", () => {
-
     preview(photo1, preview1);
-
 });
 
 photo2.addEventListener("change", () => {
-
     preview(photo2, preview2);
-
 });
 
-generateBtn.addEventListener("click", () => {
+generateBtn.addEventListener("click", async () => {
+    if (!photo1.files[0] || !photo2.files[0]) {
+        alert("写真を2枚選んでください");
+        return;
+    }
 
-    const prompt = `Create a realistic cinematic video.
+    generateBtn.innerText = "生成中...";
+    generateBtn.disabled = true;
+    result.value = "Geminiが写真を解析してプロンプトを作成中...";
 
-Platform:
-${service.value}
+    const formData = new FormData();
+    formData.append("photo1", photo1.files[0]);
+    formData.append("photo2", photo2.files[0]);
+    formData.append("scene", scene.value);
+    formData.append("mood", mood.value);
+    formData.append("service", service.value);
 
-Scene:
-${scene.value}
+    try {
+        const response = await fetch("/generate", {
+            method: "POST",
+            body: formData
+        });
 
-Mood:
-${mood.value}
+        const data = await response.json();
 
-Use the two uploaded people as the main characters.
+        if (!response.ok) {
+            result.value = "エラー:\n" + (data.error || "生成に失敗しました");
+            return;
+        }
 
-Requirements:
-- Keep both faces consistent.
-- Natural body movement.
-- Natural eye contact.
-- Realistic hands.
-- Cinematic camera movement.
-- High quality.
-- 5 to 10 seconds.
-- Soft lighting.
-- Realistic background.
-`;
+        result.value = data.prompt || "プロンプトが空でした。";
 
-    result.value = prompt;
-
+    } catch (error) {
+        result.value = "通信エラー:\n" + error.message;
+    } finally {
+        generateBtn.innerText = "プロンプト生成";
+        generateBtn.disabled = false;
+    }
 });
 
 copyBtn.addEventListener("click", async () => {
-
     if (!result.value) return;
 
     await navigator.clipboard.writeText(result.value);
@@ -84,9 +84,6 @@ copyBtn.addEventListener("click", async () => {
     copyBtn.innerText = "✅ コピー完了";
 
     setTimeout(() => {
-
         copyBtn.innerText = "コピー";
-
     }, 1500);
-
 });

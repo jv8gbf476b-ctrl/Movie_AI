@@ -1,103 +1,196 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Movie_AI Ver.3</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=3">
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Movie_AI Ver.4</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=4">
+
 </head>
+
 <body>
 
 <div class="app">
-  <header>
-    <h1>🎬 Movie_AI</h1>
-    <p>写真から動画生成AI用のプロンプトを作る</p>
-  </header>
 
-  <main>
-    <section class="card">
-      <h2>📷 写真</h2>
+<header>
 
-      <label>写真①</label>
-      <input type="file" id="photo1" accept="image/*">
-      <img id="preview1" class="preview" alt="写真①プレビュー">
+<h1>🎬 Movie_AI</h1>
 
-      <label>写真②</label>
-      <input type="file" id="photo2" accept="image/*">
-      <img id="preview2" class="preview" alt="写真②プレビュー">
-    </section>
+<p>AI Movie Director</p>
 
-    <section class="card">
-      <h2>🎭 演出</h2>
+</header>
 
-      <label>シーン</label>
-      <select id="scene">
-        <option value="romantic beach date, walking hand in hand near the ocean at sunset">海辺デート</option>
-        <option value="romantic night view date, standing close together under city lights">夜景デート</option>
-        <option value="cute cafe date, smiling and talking naturally across a small table">カフェデート</option>
-        <option value="amusement park date, walking together with joyful expressions and colorful lights">遊園地デート</option>
-        <option value="cinematic movie scene, emotional couple moment with dramatic lighting">映画風</option>
-        <option value="Korean drama style romantic scene, soft lighting and emotional eye contact">韓国ドラマ風</option>
-        <option value="travel vlog style romantic scene, walking together in a beautiful travel destination">旅行風</option>
-      </select>
+<main>
 
-      <label>雰囲気</label>
-      <select id="mood">
-        <option value="romantic, cinematic, soft lighting">ロマンチック</option>
-        <option value="cute, natural, warm atmosphere">かわいい自然体</option>
-        <option value="emotional, dramatic, movie-like">感動的</option>
-        <option value="fun, playful, bright mood">楽しい</option>
-        <option value="luxury, elegant, premium film style">高級映画風</option>
-      </select>
+<section class="card">
 
-      <label>動画サービス</label>
-      <select id="service">
-        <option value="Kling">Kling</option>
-        <option value="Runway">Runway</option>
-        <option value="Pika">Pika</option>
-      </select>
+<h2>📷 写真</h2>
 
-      <label>❤️ ロマンス</label>
-      <select id="romance">
-        <option value="none">なし</option>
-        <option value="holding hands">🤝 手をつなぐ</option>
-        <option value="warm hug">🤗 ハグ</option>
-        <option value="gentle kiss">💋 キス</option>
-        <option value="forehead kiss">😘 おでこにキス</option>
-        <option value="looking into each other's eyes">💞 見つめ合う</option>
-        <option value="proposal">💍 プロポーズ</option>
-        <option value="dancing together">💃 ダンス</option>
-        <option value="embracing in the rain">☔ 雨の中で抱き合う</option>
-      </select>
+<label>人物①</label>
 
-      <label>🎥 カメラ</label>
-      <select id="camera">
-        <option value="cinematic">映画</option>
-        <option value="drone shot">ドローン</option>
-        <option value="close up">クローズアップ</option>
-        <option value="slow motion">スローモーション</option>
-        <option value="POV">POV</option>
-        <option value="handheld">手持ちカメラ</option>
-      </select>
+<input type="file" id="photo1" accept="image/*">
 
-      <label>🎬 監督レベル</label>
-      <select id="director">
-        <option value="simple">😊 初級</option>
-        <option value="cinematic">🎬 映画監督</option>
-        <option value="hollywood">🏆 ハリウッド監督</option>
-      </select>
+<img id="preview1" class="preview">
 
-      <button id="generateBtn">AIプロンプト生成</button>
-    </section>
+<label>人物②</label>
 
-    <section class="card">
-      <h2>🧠 生成結果</h2>
-      <textarea id="result" placeholder="ここにAI生成プロンプトが出るよ"></textarea>
-      <button id="copyBtn" class="subButton">コピー</button>
-    </section>
-  </main>
+<input type="file" id="photo2" accept="image/*">
+
+<img id="preview2" class="preview">
+
+</section>
+
+<section class="card">
+
+<h2>🎭 シーン設定</h2>
+
+<label>シーン</label>
+
+<select id="scene">
+
+<option value="romantic beach date">海辺デート</option>
+
+<option value="night city date">夜景デート</option>
+
+<option value="cute cafe">カフェ</option>
+
+<option value="amusement park">遊園地</option>
+
+<option value="travel">旅行</option>
+
+<option value="movie scene">映画風</option>
+
+<option value="korean drama">韓国ドラマ</option>
+
+<option value="summer festival">夏祭り</option>
+
+<option value="snow">雪景色</option>
+
+<option value="cherry blossom">桜</option>
+
+</select>
+
+<label>雰囲気</label>
+
+<select id="mood">
+
+<option value="romantic">ロマンチック</option>
+
+<option value="cute">かわいい</option>
+
+<option value="emotional">感動</option>
+
+<option value="happy">幸せ</option>
+
+<option value="luxury">高級感</option>
+
+<option value="cinematic">映画</option>
+
+</select>
+
+<label>❤️ ロマンス</label>
+
+<select id="romance">
+
+<option value="none">なし</option>
+
+<option value="holding hands">🤝 手をつなぐ</option>
+
+<option value="warm hug">🤗 ハグ</option>
+
+<option value="gentle kiss">💋 キス</option>
+
+<option value="forehead kiss">😘 おでこキス</option>
+
+<option value="looking into each other's eyes">💞 見つめ合う</option>
+
+<option value="proposal">💍 プロポーズ</option>
+
+<option value="dancing together">💃 ダンス</option>
+
+<option value="embracing in the rain">☔ 雨の中で抱き合う</option>
+
+</select>
+
+<label>🎥 カメラ</label>
+
+<select id="camera">
+
+<option value="cinematic">映画</option>
+
+<option value="drone shot">ドローン</option>
+
+<option value="close up">クローズアップ</option>
+
+<option value="POV">POV</option>
+
+<option value="slow motion">スローモーション</option>
+
+<option value="handheld">手持ち</option>
+
+</select>
+
+<label>🎬 監督レベル</label>
+
+<select id="director">
+
+<option value="simple">😊 初級</option>
+
+<option value="cinematic">🎬 映画監督</option>
+
+<option value="hollywood">🏆 ハリウッド監督</option>
+
+</select>
+
+<label>🎞 動画AI</label>
+
+<select id="service">
+
+<option>Kling</option>
+
+<option>Runway</option>
+
+<option>Pika</option>
+
+<option>Veo</option>
+
+<option>Luma</option>
+
+</select>
+
+<button id="generateBtn">
+
+🎬 AIプロンプト生成
+
+</button>
+
+</section>
+
+<section class="card">
+
+<h2>🧠 AI生成結果</h2>
+
+<textarea id="result"></textarea>
+
+<button id="copyBtn" class="subButton">
+
+📋 コピー
+
+</button>
+
+</section>
+
+</main>
+
 </div>
 
-<script src="{{ url_for('static', filename='js/script.js') }}?v=3"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}?v=4"></script>
+
 </body>
+
 </html>

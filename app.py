@@ -64,48 +64,21 @@ You are Movie_AI's AI Select engine.
 
 Analyze the uploaded image or images and create the best AI video plan.
 
-Goal:
-Choose the most visually effective video concept for the uploaded subject.
-
-You must detect what kind of subject this is:
-- person
-- couple
-- pet
-- car
-- motorcycle
-- illustration
-- original character
-- scenery
-- product
-- other
+Detect the subject type:
+person, couple, pet, car, motorcycle, illustration, original_character, scenery, product, or other.
 
 User romance setting:
 romance_mode: {romance_mode}
 romance_level: {romance_level}
 
 Rules:
-- If romance_mode is off, do not choose romantic actions.
+- If romance_mode is off, romance must be "none".
 - If romance_mode is on, choose an elegant, cinematic, non-explicit romantic action only when appropriate.
-- Do not create sexual or explicit content.
-- If the image is a car, motorcycle, pet, illustration, or product, romance must be none.
-- Choose a plan that would make the final video feel impressive and useful.
-- Prefer simple, high-impact scenes over complicated scenes.
-- Return only valid JSON.
-- Do not wrap the JSON in markdown.
-
-JSON format:
-{{
-  "subject_type": "person | couple | pet | car | motorcycle | illustration | original_character | scenery | product | other",
-  "scene": "best scene in English",
-  "mood": "best mood in English",
-  "romance": "none or selected romance action in English",
-  "camera": "best camera style in English",
-  "time": "best time or weather in English",
-  "style": "best video style in English",
-  "service": "Kling",
-  "reason_ja": "日本語でおすすめ理由を短く説明",
-  "confidence": 1
-}}
+- If the image is a car, motorcycle, pet, illustration, product, scenery, or other non-human subject, romance must be "none".
+- Choose a simple, high-impact video concept.
+- service should usually be "Kling".
+- confidence must be a number from 1 to 5.
+- reason_ja must be short Japanese text.
 """
             ),
             types.Part.from_bytes(
@@ -122,9 +95,7 @@ JSON format:
                 )
             )
 
-        client = get_client()
-
-        response = client.models.generate_content(
+        response = get_client().models.generate_content(
             model=GEMINI_MODEL,
             contents=[
                 types.Content(
@@ -133,19 +104,64 @@ JSON format:
                 )
             ],
             config=types.GenerateContentConfig(
-                temperature=0.7,
-                top_p=0.95,
+                temperature=0.4,
+                top_p=0.9,
                 max_output_tokens=1000,
+                response_mime_type="application/json",
+                response_schema={
+                    "type": "object",
+                    "properties": {
+                        "subject_type": {
+                            "type": "string"
+                        },
+                        "scene": {
+                            "type": "string"
+                        },
+                        "mood": {
+                            "type": "string"
+                        },
+                        "romance": {
+                            "type": "string"
+                        },
+                        "camera": {
+                            "type": "string"
+                        },
+                        "time": {
+                            "type": "string"
+                        },
+                        "style": {
+                            "type": "string"
+                        },
+                        "service": {
+                            "type": "string"
+                        },
+                        "reason_ja": {
+                            "type": "string"
+                        },
+                        "confidence": {
+                            "type": "number"
+                        }
+                    },
+                    "required": [
+                        "subject_type",
+                        "scene",
+                        "mood",
+                        "romance",
+                        "camera",
+                        "time",
+                        "style",
+                        "service",
+                        "reason_ja",
+                        "confidence"
+                    ]
+                },
             ),
         )
 
         if not response.text:
             return jsonify({"error": "AI Selectから返答がありませんでした。"}), 500
 
-        cleaned = response.text.strip()
-        cleaned = cleaned.replace("```json", "").replace("```", "").strip()
-
-        plan = json.loads(cleaned)
+        plan = json.loads(response.text)
 
         return jsonify({"plan": plan})
 
@@ -165,6 +181,7 @@ def build_romance_instruction(romance):
         "dancing together": "The two people dance together slowly and romantically.",
         "embracing in the rain": "The two people embrace emotionally in soft rain, cinematic and elegant.",
     }
+
     return romance_map.get(romance, romance_map["none"])
 
 
@@ -256,9 +273,7 @@ Rules:
                 )
             )
 
-        client = get_client()
-
-        response = client.models.generate_content(
+        response = get_client().models.generate_content(
             model=GEMINI_MODEL,
             contents=[
                 types.Content(

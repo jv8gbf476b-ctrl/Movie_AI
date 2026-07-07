@@ -4,22 +4,26 @@ const photo2 = document.getElementById("photo2");
 const preview1 = document.getElementById("preview1");
 const preview2 = document.getElementById("preview2");
 
-const aiDirector = document.getElementById("aiDirector");
 const romanceMode = document.getElementById("romanceMode");
 const romanceLevel = document.getElementById("romanceLevel");
 
-const manualSettings = document.getElementById("manualSettings");
-
-const scene = document.getElementById("scene");
-const mood = document.getElementById("mood");
-const romance = document.getElementById("romance");
-const camera = document.getElementById("camera");
-const director = document.getElementById("director");
-const service = document.getElementById("service");
-
+const selectBtn = document.getElementById("selectBtn");
 const generateBtn = document.getElementById("generateBtn");
 const copyBtn = document.getElementById("copyBtn");
+
 const result = document.getElementById("result");
+
+const planSubject = document.getElementById("planSubject");
+const planScene = document.getElementById("planScene");
+const planMood = document.getElementById("planMood");
+const planRomance = document.getElementById("planRomance");
+const planCamera = document.getElementById("planCamera");
+const planTime = document.getElementById("planTime");
+const planStyle = document.getElementById("planStyle");
+const planService = document.getElementById("planService");
+const planReason = document.getElementById("planReason");
+
+let currentPlan = null;
 
 function preview(fileInput, image) {
     const file = fileInput.files[0];
@@ -36,18 +40,37 @@ function preview(fileInput, image) {
     reader.readAsDataURL(file);
 }
 
-function updateModeView() {
-    if (aiDirector.value === "on") {
-        manualSettings.style.display = "none";
-    } else {
-        manualSettings.style.display = "block";
+function updateRomanceView() {
+    romanceLevel.disabled = romanceMode.value === "off";
+}
+
+function buildFormData() {
+    const formData = new FormData();
+
+    formData.append("photo1", photo1.files[0]);
+
+    if (photo2.files[0]) {
+        formData.append("photo2", photo2.files[0]);
     }
 
-    if (romanceMode.value === "on") {
-        romanceLevel.disabled = false;
-    } else {
-        romanceLevel.disabled = true;
-    }
+    formData.append("romanceMode", romanceMode.value);
+    formData.append("romanceLevel", romanceLevel.value);
+
+    return formData;
+}
+
+function renderPlan(plan) {
+    currentPlan = plan;
+
+    planSubject.innerText = plan.subject_type || "unknown";
+    planScene.innerText = plan.scene || "unknown";
+    planMood.innerText = plan.mood || "unknown";
+    planRomance.innerText = plan.romance || "none";
+    planCamera.innerText = plan.camera || "unknown";
+    planTime.innerText = plan.time || "unknown";
+    planStyle.innerText = plan.style || "unknown";
+    planService.innerText = plan.service || "Kling";
+    planReason.innerText = plan.reason_ja || "おすすめ理由はありません。";
 }
 
 photo1.addEventListener("change", () => {
@@ -58,8 +81,43 @@ photo2.addEventListener("change", () => {
     preview(photo2, preview2);
 });
 
-aiDirector.addEventListener("change", updateModeView);
-romanceMode.addEventListener("change", updateModeView);
+romanceMode.addEventListener("change", updateRomanceView);
+
+selectBtn.addEventListener("click", async () => {
+    if (!photo1.files[0]) {
+        alert("画像①を選んでください");
+        return;
+    }
+
+    selectBtn.innerText = "分析中...";
+    selectBtn.disabled = true;
+    result.value = "";
+    planReason.innerText = "AI Selectが画像を分析しています...";
+
+    const formData = buildFormData();
+
+    try {
+        const response = await fetch("/recommend", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            planReason.innerText = "エラー: " + (data.error || "AI Selectに失敗しました");
+            return;
+        }
+
+        renderPlan(data.plan);
+
+    } catch (error) {
+        planReason.innerText = "通信エラー: " + error.message;
+    } finally {
+        selectBtn.innerText = "✨ AI Select";
+        selectBtn.disabled = false;
+    }
+});
 
 generateBtn.addEventListener("click", async () => {
     if (!photo1.files[0]) {
@@ -67,28 +125,17 @@ generateBtn.addEventListener("click", async () => {
         return;
     }
 
-    generateBtn.innerText = "生成中...";
-    generateBtn.disabled = true;
-    result.value = "Movie_AIが画像を解析して、AI監督として最適な演出を考えています...";
-
-    const formData = new FormData();
-
-    formData.append("photo1", photo1.files[0]);
-
-    if (photo2.files[0]) {
-        formData.append("photo2", photo2.files[0]);
+    if (!currentPlan) {
+        alert("先にAI Selectを実行してください");
+        return;
     }
 
-    formData.append("aiDirector", aiDirector.value);
-    formData.append("romanceMode", romanceMode.value);
-    formData.append("romanceLevel", romanceLevel.value);
+    generateBtn.innerText = "生成中...";
+    generateBtn.disabled = true;
+    result.value = "AI Planをもとに、動画生成AI用プロンプトを作成中...";
 
-    formData.append("scene", scene.value);
-    formData.append("mood", mood.value);
-    formData.append("romance", romance.value);
-    formData.append("camera", camera.value);
-    formData.append("director", director.value);
-    formData.append("service", service.value);
+    const formData = buildFormData();
+    formData.append("plan", JSON.stringify(currentPlan));
 
     try {
         const response = await fetch("/generate", {
@@ -108,7 +155,7 @@ generateBtn.addEventListener("click", async () => {
     } catch (error) {
         result.value = "通信エラー:\n" + error.message;
     } finally {
-        generateBtn.innerText = "🎬 AIプロンプト生成";
+        generateBtn.innerText = "🎬 このプランでプロンプト生成";
         generateBtn.disabled = false;
     }
 });
@@ -125,4 +172,4 @@ copyBtn.addEventListener("click", async () => {
     }, 1500);
 });
 
-updateModeView();
+updateRomanceView();

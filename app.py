@@ -27,7 +27,7 @@ def health():
 
 def build_romance_instruction(romance):
     romance_map = {
-        "none": "No romantic physical action. Keep the interaction natural, friendly, and cinematic without holding hands, hugging, or kissing.",
+        "none": "No romance. Do not describe romantic tension, dating energy, holding hands, hugging, kissing, flirting, or couple-like behavior. Keep the interaction as close friends or travel companions.",
         "holding hands": "The two people gently hold hands in a natural romantic way.",
         "warm hug": "The two people share a warm, emotional hug, cinematic and elegant.",
         "gentle kiss": "The two people share a gentle romantic movie-style kiss, elegant and non-explicit.",
@@ -42,22 +42,22 @@ def build_romance_instruction(romance):
 
 def build_camera_instruction(camera):
     camera_map = {
-        "cinematic": "Use cinematic camera movement, smooth dolly-in, shallow depth of field, and film-like framing.",
-        "drone shot": "Use an elegant aerial drone shot that slowly moves closer to the couple.",
-        "close up": "Use intimate close-up shots focused on faces, expressions, and subtle emotions.",
-        "slow motion": "Use graceful slow-motion movement with cinematic emotional pacing.",
-        "POV": "Use a natural POV-style camera perspective, immersive and realistic.",
-        "handheld": "Use soft handheld cinematic camera movement with realistic documentary-style intimacy.",
+        "cinematic": "Slow cinematic dolly-in, film-like framing, shallow depth of field.",
+        "drone shot": "Elegant aerial drone shot slowly moving closer.",
+        "close up": "Close-up shots focused on faces, eyes, expressions, and subtle emotion.",
+        "slow motion": "Graceful slow motion with emotional pacing.",
+        "POV": "Immersive first-person POV camera perspective.",
+        "handheld": "Soft handheld cinematic camera with realistic documentary intimacy.",
     }
     return camera_map.get(camera, camera_map["cinematic"])
 
 
 def build_director_instruction(director):
     if director == "simple":
-        return "Create a clear, simple, easy-to-use prompt. Keep it practical and not too long."
+        return "Keep the prompt short, practical, and easy to paste into Kling."
     if director == "hollywood":
-        return "Create a highly detailed Hollywood-level prompt with strong cinematic direction, lens language, lighting, emotion, movement, atmosphere, and negative prompt."
-    return "Create a polished cinematic director-level prompt with detailed camera, lighting, motion, and emotional direction."
+        return "Make the prompt extremely cinematic, detailed, premium, and Hollywood-level."
+    return "Make the prompt polished, cinematic, and director-level."
 
 
 @app.route("/generate", methods=["POST"])
@@ -82,17 +82,18 @@ def generate():
         photo1_bytes = photo1.read()
         photo2_bytes = photo2.read()
 
-        romance_instruction = build_romance_instruction(romance)
-        camera_instruction = build_camera_instruction(camera)
-        director_instruction = build_director_instruction(director)
-
         client = genai.Client(api_key=GEMINI_API_KEY)
 
         director_prompt = f"""
 You are Movie_AI, a professional AI video director and prompt engineer.
 
 Analyze the two uploaded reference photos carefully.
-Create one high-quality English prompt for {service} image-to-video generation.
+Create ONE English prompt optimized for {service} image-to-video generation.
+
+Important:
+Do NOT write a novel.
+Do NOT write poetic paragraphs.
+Write a clear production-style shooting instruction sheet.
 
 User settings:
 Scene: {scene}
@@ -102,54 +103,57 @@ Camera style: {camera}
 Director level: {director}
 
 Romance rule:
-{romance_instruction}
+{build_romance_instruction(romance)}
 
 Camera rule:
-{camera_instruction}
+{build_camera_instruction(camera)}
 
 Director rule:
-{director_instruction}
+{build_director_instruction(director)}
 
-Photo analysis requirements:
-Describe each person based only on visible details in the uploaded images.
-Include:
-- apparent age range
-- hairstyle and hair color
-- facial expression
-- clothing
-- posture
-- visible accessories
-- overall vibe
-- relationship-like positioning only if requested by the romance setting
+Photo analysis:
+Describe only visible details from the uploaded photos.
+Include hairstyle, clothing, expression, posture, accessories, and overall vibe.
+Do not invent details that are not visible.
 
-Prompt structure:
-Write the final prompt in polished English.
-Include these sections naturally:
-1. Main subject
-2. Appearance of both people
-3. Scene and environment
-4. Action and interaction
-5. Romance direction
-6. Camera movement
-7. Lighting and atmosphere
-8. Realistic motion details
-9. Quality instructions
-10. Negative prompt
+Output format:
+Use exactly this structure:
 
-Important rules:
+SUBJECT:
+Describe both people clearly based on the reference photos.
+
+SCENE:
+Describe the location and environment.
+
+ACTION:
+Describe what they do in the 5 to 10 second video.
+
+ROMANCE:
+Describe the selected romance action. If romance is none, clearly state there is no romantic physical contact or romantic behavior.
+
+CAMERA:
+Describe camera movement based on the selected camera style.
+
+LIGHTING:
+Describe lighting, color, atmosphere, and cinematic look.
+
+MOTION:
+Describe natural movement, clothing movement, facial expression changes, and realistic body motion.
+
+QUALITY:
+Describe ultra-realistic, high-detail, cinematic video quality.
+
+NEGATIVE PROMPT:
+Avoid distorted faces, identity change, extra fingers, bad hands, warped hands, deformed body, duplicated people, unnatural anatomy, blurry faces, low quality, artifacts, flickering, unrealistic motion, strange eye movement, broken limbs, inconsistent clothing, explicit content, and sexual content.
+
+Rules:
 - Keep both identities and faces consistent with the reference photos.
-- Do not change race, age, face shape, hairstyle, or clothing unless the scene clearly requires only minor cinematic styling.
-- Make both people appear naturally together in the same scene.
-- If romance is "none", do not include kissing, hugging, holding hands, or romantic physical contact.
-- Romantic content must stay elegant, cinematic, and non-explicit.
-- Avoid sexual or explicit content.
-- Optimize wording for {service}.
-- Make the prompt ready to paste directly into {service}.
-
-Negative prompt must include:
-Avoid distorted faces, identity change, extra fingers, bad hands, warped hands, deformed body, duplicated people, unnatural anatomy, blurry faces, low quality, artifacts, flickering, unrealistic motion, strange eye movement, broken limbs, and inconsistent clothing.
-
-Output only the final English prompt.
+- Keep clothing and hairstyle consistent unless minor cinematic styling is necessary.
+- Make the two people appear naturally together in the same scene.
+- Romantic content must be elegant, cinematic, and non-explicit.
+- If romance is none, avoid words like romantic, couple, lovers, kiss, hug, holding hands, intimate, passionate.
+- Make it ready to paste directly into {service}.
+- Output only the final prompt.
 """
 
         response = client.models.generate_content(
@@ -171,9 +175,9 @@ Output only the final English prompt.
                 )
             ],
             config=types.GenerateContentConfig(
-                temperature=0.85,
+                temperature=0.75,
                 top_p=0.95,
-                max_output_tokens=2200,
+                max_output_tokens=2400,
             ),
         )
 

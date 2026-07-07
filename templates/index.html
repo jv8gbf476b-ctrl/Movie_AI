@@ -5,9 +5,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Movie_AI Sprint 1</title>
+<title>Movie_AI | AI Select</title>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=sprint1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=ais1">
 </head>
 
 <body>
@@ -16,7 +16,7 @@
 
 <header>
 <h1>🎬 Movie_AI</h1>
-<p>AI Video Director</p>
+<p>Powered by AI Select</p>
 </header>
 
 <main>
@@ -34,106 +34,48 @@
 </section>
 
 <section class="card">
-<h2>🤖 AI監督モード</h2>
+<h2>✨ AI Select</h2>
 
-<label>AI監督</label>
-<select id="aiDirector">
-<option value="on">ON：AIに全部おすすめさせる</option>
-<option value="off">OFF：自分で細かく設定する</option>
-</select>
-
-<label>❤️ ロマンス</label>
+<label>ロマンス</label>
 <select id="romanceMode">
 <option value="off">OFF：恋愛演出なし</option>
 <option value="on">ON：恋愛演出あり</option>
 </select>
 
-<label>❤️ ロマンス強度</label>
+<label>ロマンス強度</label>
 <select id="romanceLevel">
 <option value="soft">控えめ</option>
 <option value="romantic">ロマンチック</option>
 <option value="passionate">情熱的</option>
 </select>
+
+<button id="selectBtn">✨ AI Select</button>
 </section>
 
-<section class="card" id="manualSettings">
-<h2>⚙️ 詳細設定</h2>
+<section class="card" id="planCard">
+<h2>📋 AI Plan</h2>
 
-<label>シーン</label>
-<select id="scene">
-<option value="romantic beach date">海辺デート</option>
-<option value="night city date">夜景デート</option>
-<option value="cute cafe">カフェ</option>
-<option value="amusement park">遊園地</option>
-<option value="travel">旅行</option>
-<option value="movie scene">映画風</option>
-<option value="korean drama">韓国ドラマ</option>
-<option value="summer festival">夏祭り</option>
-<option value="snow">雪景色</option>
-<option value="cherry blossom">桜</option>
-<option value="mountain pass road">峠</option>
-<option value="coastal road">海沿い</option>
-<option value="race circuit">サーキット</option>
-</select>
+<div class="planBox">
+<p><strong>被写体：</strong><span id="planSubject">未選択</span></p>
+<p><strong>シーン：</strong><span id="planScene">未選択</span></p>
+<p><strong>雰囲気：</strong><span id="planMood">未選択</span></p>
+<p><strong>ロマンス：</strong><span id="planRomance">未選択</span></p>
+<p><strong>カメラ：</strong><span id="planCamera">未選択</span></p>
+<p><strong>時間帯：</strong><span id="planTime">未選択</span></p>
+<p><strong>スタイル：</strong><span id="planStyle">未選択</span></p>
+<p><strong>動画AI：</strong><span id="planService">未選択</span></p>
+</div>
 
-<label>雰囲気</label>
-<select id="mood">
-<option value="romantic">ロマンチック</option>
-<option value="cute">かわいい</option>
-<option value="emotional">感動</option>
-<option value="happy">幸せ</option>
-<option value="luxury">高級感</option>
-<option value="cinematic">映画</option>
-<option value="cool">クール</option>
-<option value="dramatic">ドラマチック</option>
-</select>
+<div class="reasonBox">
+<h3>💬 AIコメント</h3>
+<p id="planReason">AI Selectを実行すると、ここにおすすめ理由が表示されます。</p>
+</div>
 
-<label>ロマンス演出</label>
-<select id="romance">
-<option value="none">なし</option>
-<option value="holding hands">🤝 手をつなぐ</option>
-<option value="warm hug">🤗 ハグ</option>
-<option value="gentle kiss">💋 キス</option>
-<option value="forehead kiss">😘 おでこキス</option>
-<option value="looking into each other's eyes">💞 見つめ合う</option>
-<option value="proposal">💍 プロポーズ</option>
-<option value="dancing together">💃 ダンス</option>
-<option value="embracing in the rain">☔ 雨の中で抱き合う</option>
-</select>
-
-<label>カメラ</label>
-<select id="camera">
-<option value="cinematic">映画</option>
-<option value="drone shot">ドローン</option>
-<option value="close up">クローズアップ</option>
-<option value="POV">POV</option>
-<option value="slow motion">スローモーション</option>
-<option value="handheld">手持ち</option>
-</select>
-
-<label>監督レベル</label>
-<select id="director">
-<option value="simple">😊 初級</option>
-<option value="cinematic">🎬 映画監督</option>
-<option value="hollywood">🏆 ハリウッド監督</option>
-</select>
-
-<label>動画AI</label>
-<select id="service">
-<option>Kling</option>
-<option>Runway</option>
-<option>Pika</option>
-<option>Veo</option>
-<option>Luma</option>
-</select>
+<button id="generateBtn">🎬 このプランでプロンプト生成</button>
 </section>
 
 <section class="card">
-<button id="generateBtn">🎬 AIプロンプト生成</button>
-</section>
-
-<section class="card">
-<h2>🧠 AI生成結果</h2>
+<h2>🧠 生成結果</h2>
 <textarea id="result" placeholder="ここにAI生成プロンプトが出るよ"></textarea>
 <button id="copyBtn" class="subButton">📋 コピー</button>
 </section>
@@ -142,7 +84,7 @@
 
 </div>
 
-<script src="{{ url_for('static', filename='js/script.js') }}?v=sprint1"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}?v=ais1"></script>
 
 </body>
 </html>

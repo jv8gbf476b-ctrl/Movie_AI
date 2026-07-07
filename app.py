@@ -10,6 +10,8 @@ app = Flask(__name__)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 GEMINI_MODEL = "gemini-2.5-flash"
 
+client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
+
 
 @app.route("/")
 def home():
@@ -26,10 +28,6 @@ def health():
     }
 
 
-def get_client():
-    return genai.Client(api_key=GEMINI_API_KEY)
-
-
 def get_uploaded_images():
     photo1 = request.files.get("photo1")
     photo2 = request.files.get("photo2")
@@ -42,11 +40,10 @@ def get_uploaded_images():
 
 @app.route("/recommend", methods=["POST"])
 def recommend():
-    if not GEMINI_API_KEY:
+    if not client:
         return jsonify({"error": "GEMINI_API_KEY is not set."}), 500
 
     photo1, photo2, error = get_uploaded_images()
-
     if error:
         return jsonify({"error": error}), 400
 
@@ -95,7 +92,7 @@ Rules:
                 )
             )
 
-        response = get_client().models.generate_content(
+        response = client.models.generate_content(
             model=GEMINI_MODEL,
             contents=[
                 types.Content(
@@ -111,36 +108,16 @@ Rules:
                 response_schema={
                     "type": "object",
                     "properties": {
-                        "subject_type": {
-                            "type": "string"
-                        },
-                        "scene": {
-                            "type": "string"
-                        },
-                        "mood": {
-                            "type": "string"
-                        },
-                        "romance": {
-                            "type": "string"
-                        },
-                        "camera": {
-                            "type": "string"
-                        },
-                        "time": {
-                            "type": "string"
-                        },
-                        "style": {
-                            "type": "string"
-                        },
-                        "service": {
-                            "type": "string"
-                        },
-                        "reason_ja": {
-                            "type": "string"
-                        },
-                        "confidence": {
-                            "type": "number"
-                        }
+                        "subject_type": {"type": "string"},
+                        "scene": {"type": "string"},
+                        "mood": {"type": "string"},
+                        "romance": {"type": "string"},
+                        "camera": {"type": "string"},
+                        "time": {"type": "string"},
+                        "style": {"type": "string"},
+                        "service": {"type": "string"},
+                        "reason_ja": {"type": "string"},
+                        "confidence": {"type": "number"},
                     },
                     "required": [
                         "subject_type",
@@ -152,8 +129,8 @@ Rules:
                         "style",
                         "service",
                         "reason_ja",
-                        "confidence"
-                    ]
+                        "confidence",
+                    ],
                 },
             ),
         )
@@ -162,7 +139,6 @@ Rules:
             return jsonify({"error": "AI Selectから返答がありませんでした。"}), 500
 
         plan = json.loads(response.text)
-
         return jsonify({"plan": plan})
 
     except Exception as e:
@@ -187,11 +163,10 @@ def build_romance_instruction(romance):
 
 @app.route("/generate", methods=["POST"])
 def generate():
-    if not GEMINI_API_KEY:
+    if not client:
         return jsonify({"error": "GEMINI_API_KEY is not set."}), 500
 
     photo1, photo2, error = get_uploaded_images()
-
     if error:
         return jsonify({"error": error}), 400
 
@@ -273,7 +248,7 @@ Rules:
                 )
             )
 
-        response = get_client().models.generate_content(
+        response = client.models.generate_content(
             model=GEMINI_MODEL,
             contents=[
                 types.Content(

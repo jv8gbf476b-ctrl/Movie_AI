@@ -4,8 +4,11 @@ const photo2 = document.getElementById("photo2");
 const preview1 = document.getElementById("preview1");
 const preview2 = document.getElementById("preview2");
 
-const generateBtn = document.getElementById("generateBtn");
-const copyBtn = document.getElementById("copyBtn");
+const aiDirector = document.getElementById("aiDirector");
+const romanceMode = document.getElementById("romanceMode");
+const romanceLevel = document.getElementById("romanceLevel");
+
+const manualSettings = document.getElementById("manualSettings");
 
 const scene = document.getElementById("scene");
 const mood = document.getElementById("mood");
@@ -14,6 +17,8 @@ const camera = document.getElementById("camera");
 const director = document.getElementById("director");
 const service = document.getElementById("service");
 
+const generateBtn = document.getElementById("generateBtn");
+const copyBtn = document.getElementById("copyBtn");
 const result = document.getElementById("result");
 
 function preview(fileInput, image) {
@@ -31,6 +36,20 @@ function preview(fileInput, image) {
     reader.readAsDataURL(file);
 }
 
+function updateModeView() {
+    if (aiDirector.value === "on") {
+        manualSettings.style.display = "none";
+    } else {
+        manualSettings.style.display = "block";
+    }
+
+    if (romanceMode.value === "on") {
+        romanceLevel.disabled = false;
+    } else {
+        romanceLevel.disabled = true;
+    }
+}
+
 photo1.addEventListener("change", () => {
     preview(photo1, preview1);
 });
@@ -39,20 +58,31 @@ photo2.addEventListener("change", () => {
     preview(photo2, preview2);
 });
 
+aiDirector.addEventListener("change", updateModeView);
+romanceMode.addEventListener("change", updateModeView);
+
 generateBtn.addEventListener("click", async () => {
-    if (!photo1.files[0] || !photo2.files[0]) {
-        alert("写真を2枚選んでください");
+    if (!photo1.files[0]) {
+        alert("画像①を選んでください");
         return;
     }
 
     generateBtn.innerText = "生成中...";
     generateBtn.disabled = true;
-    result.value = "Movie_AIが写真を解析して、動画生成AI用プロンプトを作成中...";
+    result.value = "Movie_AIが画像を解析して、AI監督として最適な演出を考えています...";
 
     const formData = new FormData();
 
     formData.append("photo1", photo1.files[0]);
-    formData.append("photo2", photo2.files[0]);
+
+    if (photo2.files[0]) {
+        formData.append("photo2", photo2.files[0]);
+    }
+
+    formData.append("aiDirector", aiDirector.value);
+    formData.append("romanceMode", romanceMode.value);
+    formData.append("romanceLevel", romanceLevel.value);
+
     formData.append("scene", scene.value);
     formData.append("mood", mood.value);
     formData.append("romance", romance.value);
@@ -94,3 +124,5 @@ copyBtn.addEventListener("click", async () => {
         copyBtn.innerText = "📋 コピー";
     }, 1500);
 });
+
+updateModeView();

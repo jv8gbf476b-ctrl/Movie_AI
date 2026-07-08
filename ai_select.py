@@ -19,50 +19,6 @@ DISPLAY_JA = {
         "product": "商品",
         "other": "その他",
     },
-    "scene": {
-        "cinematic night street": "映画風の夜の街",
-        "dark japanese street": "日本の夜の街",
-        "beach": "海辺",
-        "city night": "夜景",
-        "mountain pass": "峠",
-        "race circuit": "サーキット",
-        "park": "公園",
-        "music video stage": "MV風ステージ",
-    },
-    "mood": {
-        "cinematic": "映画風",
-        "dark fantasy": "ダークファンタジー",
-        "romantic": "ロマンチック",
-        "emotional": "感動的",
-        "cool": "クール",
-        "cute": "かわいい",
-        "dramatic": "ドラマチック",
-    },
-    "camera": {
-        "cinematic medium shot": "映画風ミディアムショット",
-        "medium shot": "ミディアムショット",
-        "close up": "クローズアップ",
-        "drone shot": "ドローン撮影",
-        "tracking shot": "追従カメラ",
-        "slow dolly in": "ゆっくり寄るカメラ",
-        "handheld": "手持ちカメラ",
-    },
-    "time": {
-        "night": "夜",
-        "sunset": "夕方",
-        "morning": "朝",
-        "daytime": "昼",
-        "rainy night": "雨の夜",
-        "cinematic lighting": "映画風ライティング",
-    },
-    "style": {
-        "cinematic": "映画風",
-        "dark fantasy": "ダークファンタジー",
-        "japanese dark fantasy": "和風ダークファンタジー",
-        "music video": "MV風",
-        "anime": "アニメ風",
-        "realistic": "リアル",
-    },
     "romance": {
         "none": "なし",
         "holding hands": "手をつなぐ",
@@ -74,6 +30,70 @@ DISPLAY_JA = {
         "dancing together": "ダンス",
         "embracing in the rain": "雨の中で抱き合う",
     },
+}
+
+
+KEYWORD_JA = {
+    "scene": [
+        ("beach", "海辺"),
+        ("ocean", "海辺"),
+        ("sea", "海辺"),
+        ("city", "夜景の街"),
+        ("street", "街並み"),
+        ("japanese", "日本の街並み"),
+        ("night", "夜の街"),
+        ("mountain", "峠"),
+        ("pass", "峠"),
+        ("circuit", "サーキット"),
+        ("race", "サーキット"),
+        ("park", "公園"),
+        ("cafe", "カフェ"),
+        ("festival", "夏祭り"),
+        ("shrine", "神社"),
+        ("temple", "寺院"),
+    ],
+    "mood": [
+        ("dark fantasy", "ダークファンタジー"),
+        ("mysterious", "神秘的"),
+        ("eerie", "不気味"),
+        ("romantic", "ロマンチック"),
+        ("emotional", "感動的"),
+        ("cool", "クール"),
+        ("cute", "かわいい"),
+        ("dramatic", "ドラマチック"),
+        ("cinematic", "映画風"),
+    ],
+    "camera": [
+        ("medium", "ミディアムショット"),
+        ("close", "クローズアップ"),
+        ("drone", "ドローン撮影"),
+        ("tracking", "追従カメラ"),
+        ("dolly", "ゆっくり寄るカメラ"),
+        ("handheld", "手持ちカメラ"),
+        ("low angle", "ローアングル"),
+        ("wide", "ワイドショット"),
+    ],
+    "time": [
+        ("night", "夜"),
+        ("full moon", "満月の夜"),
+        ("moon", "月夜"),
+        ("sunset", "夕方"),
+        ("golden", "夕方"),
+        ("morning", "朝"),
+        ("day", "昼"),
+        ("rain", "雨"),
+        ("snow", "雪"),
+        ("cinematic lighting", "映画風ライティング"),
+    ],
+    "style": [
+        ("japanese dark fantasy", "和風ダークファンタジー"),
+        ("dark fantasy", "ダークファンタジー"),
+        ("anime", "アニメ風"),
+        ("ukiyo", "浮世絵風"),
+        ("music video", "MV風"),
+        ("cinematic", "映画風"),
+        ("realistic", "リアル"),
+    ],
 }
 
 
@@ -205,8 +225,19 @@ def _to_ja(category, value):
     if not value:
         return "未判定"
 
-    key = str(value).strip().lower()
-    return DISPLAY_JA.get(category, {}).get(key, value)
+    raw = str(value).strip()
+    key = raw.lower()
+
+    if category in DISPLAY_JA:
+        direct = DISPLAY_JA[category].get(key)
+        if direct:
+            return direct
+
+    for keyword, label in KEYWORD_JA.get(category, []):
+        if keyword in key:
+            return label
+
+    return raw
 
 
 def _clean_reason(reason):

@@ -57,17 +57,22 @@ Planning Rules
 
 Romance Rules
 
-- OFF → romance must be none.
+- If romance_mode is off, romance must be none.
 - Romance is only for humans.
 - Never generate explicit or sexual content.
 
-Return ONLY JSON.
+Return valid JSON only.
 """
 
 
-def build_parts(photo1_bytes, photo1_type, photo2_bytes=None, photo2_type=None,
-                romance_mode="off", romance_level="soft"):
-
+def build_parts(
+    photo1_bytes,
+    photo1_type,
+    photo2_bytes=None,
+    photo2_type=None,
+    romance_mode="off",
+    romance_level="soft",
+):
     parts = [
         types.Part.from_text(
             text=build_ai_select_prompt(
@@ -122,8 +127,19 @@ AI_SELECT_SCHEMA = {
 
 
 def parse_plan(response):
+    if hasattr(response, "parsed") and response.parsed:
+        if isinstance(response.parsed, dict):
+            return response.parsed
+
+        if hasattr(response.parsed, "model_dump"):
+            return response.parsed.model_dump()
+
+        return dict(response.parsed)
 
     if not response.text:
         raise ValueError("AI Selectから返答がありませんでした。")
 
-    return json.loads(response.text)
+    cleaned = response.text.strip()
+    cleaned = cleaned.replace("```json", "").replace("```", "").strip()
+
+    return json.loads(cleaned)

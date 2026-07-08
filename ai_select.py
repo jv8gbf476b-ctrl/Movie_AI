@@ -44,12 +44,11 @@ One Tap Cinema
 Mission:
 Analyze the uploaded image or images.
 Create the best cinematic video plan.
+Return JSON only.
 
-User Romance Setting:
+User Settings:
 romance_mode = {romance_mode}
 romance_level = {romance_level}
-
-Return JSON only.
 
 subject_type must be one of:
 person
@@ -77,38 +76,50 @@ embracing in the rain
 service must always be:
 Kling
 
-Everything else should be natural Japanese.
+Japanese Output Rules:
+- scene must be Japanese.
+- mood must be Japanese.
+- camera must be Japanese.
+- time must be Japanese.
+- style must be Japanese.
+- reason_ja must be Japanese and maximum 2 short sentences.
 
-scene example:
-夜の日本の街並み
-
-mood example:
-神秘的で不気味
-
-camera example:
-ドリーショット
-
-time example:
-夜
-
-style example:
-和風ダークファンタジー
-
-reason_ja:
-2文以内。
-短く自然な日本語。
-
-Rules:
+Image Fidelity Rules:
+- Use only visible background elements.
+- Do not add torii gates unless clearly visible.
+- Do not add temples unless clearly visible.
+- Do not add full moon unless clearly visible.
+- Do not add roads, mountains, forests, or buildings unless visible.
 - Preserve identity.
 - Preserve clothing.
 - Preserve hairstyle.
+- Preserve accessories.
 - Preserve visible objects.
 - Preserve visible creatures.
 - Preserve atmosphere.
-- No unnecessary characters.
-- No explicit content.
-- Romance only for humans.
+- Do not invent unnecessary characters.
+
+Romance Rules:
 - If romance_mode is off, romance must be none.
+- If romance_mode is on and subject_type is person or couple, choose one suitable non-explicit romance action.
+- If romance_mode is on and romance_level is soft, prefer looking into each other's eyes or holding hands.
+- If romance_mode is on and romance_level is romantic, prefer warm hug, dancing together, or forehead kiss.
+- If romance_mode is on and romance_level is passionate, prefer warm hug, gentle kiss, embracing in the rain, or looking into each other's eyes.
+- If romance_mode is on but there is only one human subject visible, choose looking into each other's eyes only if a second human reference image exists. Otherwise romance must be none.
+- Never generate explicit or sexual content.
+
+Good Examples:
+scene: 夜の日本の街並み
+mood: 神秘的で不気味
+camera: ドリーショット
+time: 夜
+style: 和風ダークファンタジー
+reason_ja: 画像に写る人物と妖怪の雰囲気を活かし、映画風の映像に向いたプランを選びました。
+
+Return valid JSON only.
+Do not use markdown.
+Do not use code fences.
+Do not use line breaks inside JSON string values.
 """
 
 

@@ -84,6 +84,24 @@ Japanese Output Rules:
 - style must be Japanese.
 - reason_ja must be Japanese and maximum 2 short sentences.
 
+Human Count Rules:
+- If two or more humans are visible in the uploaded image or images, subject_type must be couple.
+- If two separate human reference images are uploaded, subject_type must be couple.
+- If only one human is visible, subject_type must be person.
+- Do not classify two visible humans as person.
+- Do not ignore the second human.
+
+Romance Rules:
+- If romance_mode is off, romance must be none.
+- If romance_mode is on and two or more humans are visible, romance must NOT be none.
+- If romance_mode is on and two separate human reference images are uploaded, romance must NOT be none.
+- If romance_mode is on and romance_level is soft, choose holding hands, looking into each other's eyes, or warm hug.
+- If romance_mode is on and romance_level is romantic, choose warm hug, forehead kiss, dancing together, or looking into each other's eyes.
+- If romance_mode is on and romance_level is passionate, choose warm hug, gentle kiss, embracing in the rain, or looking into each other's eyes.
+- If romance_mode is on but only one human is visible and no second human reference image exists, romance must be none.
+- Never generate explicit or sexual content.
+- Romance must be tasteful, cinematic, and non-explicit.
+
 Image Fidelity Rules:
 - Use only visible background elements.
 - Do not add torii gates unless clearly visible.
@@ -99,22 +117,13 @@ Image Fidelity Rules:
 - Preserve atmosphere.
 - Do not invent unnecessary characters.
 
-Romance Rules:
-- If romance_mode is off, romance must be none.
-- If romance_mode is on and subject_type is person or couple, choose one suitable non-explicit romance action.
-- If romance_mode is on and romance_level is soft, prefer looking into each other's eyes or holding hands.
-- If romance_mode is on and romance_level is romantic, prefer warm hug, dancing together, or forehead kiss.
-- If romance_mode is on and romance_level is passionate, prefer warm hug, gentle kiss, embracing in the rain, or looking into each other's eyes.
-- If romance_mode is on but there is only one human subject visible, choose looking into each other's eyes only if a second human reference image exists. Otherwise romance must be none.
-- Never generate explicit or sexual content.
-
 Good Examples:
-scene: 夜の日本の街並み
-mood: 神秘的で不気味
+scene: 室内のベッドルーム
+mood: 穏やかで温かい
 camera: ドリーショット
-time: 夜
-style: 和風ダークファンタジー
-reason_ja: 画像に写る人物と妖怪の雰囲気を活かし、映画風の映像に向いたプランを選びました。
+time: 室内照明
+style: 映画風
+reason_ja: 画像に写る2人の雰囲気を活かし、自然で控えめなロマンス演出を選びました。
 
 Return valid JSON only.
 Do not use markdown.

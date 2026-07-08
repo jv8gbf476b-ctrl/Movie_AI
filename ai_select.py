@@ -1,6 +1,7 @@
 # ai_select.py
 
 import json
+import re
 
 from google.genai import types
 
@@ -9,41 +10,23 @@ def build_ai_select_prompt(romance_mode, romance_level):
     return f"""
 You are AI Select, the planning engine of Movie_AI.
 
-Brand
-
+Brand:
 Movie_AI
-
 One Tap Cinema
-
 指先から、まるで映画のような動画を。
 
-Mission
-
+Mission:
 Analyze the uploaded image or images.
-
 Create the best cinematic video plan.
 
-User Romance Setting
-
+User Romance Setting:
 romance_mode = {romance_mode}
-
 romance_level = {romance_level}
 
-Detect one subject type only
+Detect one subject type only:
+person, couple, pet, car, motorcycle, illustration, original_character, scenery, product, other
 
-- person
-- couple
-- pet
-- car
-- motorcycle
-- illustration
-- original_character
-- scenery
-- product
-- other
-
-Planning Rules
-
+Planning Rules:
 - Preserve the original atmosphere.
 - Keep visible objects.
 - Keep visible creatures.
@@ -54,14 +37,15 @@ Planning Rules
 - Extend the environment only when natural.
 - Choose scenes current video AI can generate reliably.
 - Prefer cinematic but realistic direction.
+- service must be Kling.
 
-Romance Rules
-
+Romance Rules:
 - If romance_mode is off, romance must be none.
 - Romance is only for humans.
 - Never generate explicit or sexual content.
 
 Return valid JSON only.
+Do not use line breaks inside JSON string values.
 """
 
 
@@ -126,6 +110,44 @@ AI_SELECT_SCHEMA = {
 }
 
 
+def _find_value(text, key, default):
+    pattern = rf'"{key}"\s*:\s*"([^"]*)'
+    match = re.search(pattern, text)
+
+    if match:
+        return match.group(1).strip()
+
+    pattern_number = rf'"{key}"\s*:\s*([0-9.]+)'
+    match_number = re.search(pattern_number, text)
+
+    if match_number:
+        try:
+            return float(match_number.group(1))
+        except ValueError:
+            return default
+
+    return default
+
+
+def _fallback_plan(text):
+    return {
+        "subject_type": _find_value(text, "subject_type", "other"),
+        "scene": _find_value(text, "scene", "cinematic scene"),
+        "mood": _find_value(text, "mood", "cinematic"),
+        "romance": _find_value(text, "romance", "none"),
+        "camera": _find_value(text, "camera", "medium shot"),
+        "time": _find_value(text, "time", "cinematic lighting"),
+        "style": _find_value(text, "style", "cinematic"),
+        "service": "Kling",
+        "reason_ja": _find_value(
+            text,
+            "reason_ja",
+            "画像の雰囲気に合わせて、最も映える映像プランを選びました。",
+        ),
+        "confidence": _find_value(text, "confidence", 4),
+    }
+
+
 def parse_plan(response):
     if hasattr(response, "parsed") and response.parsed:
         if isinstance(response.parsed, dict):
@@ -134,7 +156,10 @@ def parse_plan(response):
         if hasattr(response.parsed, "model_dump"):
             return response.parsed.model_dump()
 
-        return dict(response.parsed)
+        try:
+            return dict(response.parsed)
+        except Exception:
+            pass
 
     if not response.text:
         raise ValueError("AI Selectから返答がありませんでした。")
@@ -142,4 +167,7 @@ def parse_plan(response):
     cleaned = response.text.strip()
     cleaned = cleaned.replace("```json", "").replace("```", "").strip()
 
-    return json.loads(cleaned)
+    try:
+        return json.loads(cleaned)
+    except Exception:
+        return _fallback_plan(cleaned)

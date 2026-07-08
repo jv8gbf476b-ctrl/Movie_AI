@@ -32,7 +32,11 @@ AI_SELECT_SCHEMA = {
 }
 
 
-def build_ai_select_prompt(romance_mode, romance_level):
+def build_ai_select_prompt(
+    romance_mode,
+    romance_level,
+    user_situation="",
+):
     return f"""
 You are AI Select, the planning engine of Movie_AI.
 
@@ -44,13 +48,38 @@ One Tap Cinema
 Mission:
 Analyze the uploaded image or images.
 Create the best cinematic video plan.
-Return JSON only.
 
-User Settings:
+User Settings
 romance_mode = {romance_mode}
 romance_level = {romance_level}
 
+User Situation
+{user_situation if user_situation else "AI decides the best cinematic situation."}
+
+Priority
+
+1. Preserve identity.
+2. Preserve clothing.
+3. Preserve hairstyle.
+4. Preserve accessories.
+5. Preserve visible people.
+6. Preserve visible objects.
+7. Preserve atmosphere.
+
+Creative Rules
+
+- If the user wrote a situation, prioritize it.
+- Recreate the user's requested situation while preserving the uploaded people.
+- You may change lighting, weather, time of day and camera direction if it improves the cinematic feeling.
+- Never change identity.
+- Never change clothing.
+- Never add important new characters.
+- Never invent famous landmarks unless requested.
+- Never change race, age or gender.
+- Keep everything movie-like.
+
 subject_type must be one of:
+
 person
 couple
 pet
@@ -63,6 +92,7 @@ product
 other
 
 romance must be one of:
+
 none
 holding hands
 warm hug
@@ -73,62 +103,24 @@ proposal
 dancing together
 embracing in the rain
 
-service must always be:
-Kling
+Romance Rules
 
-Japanese Output Rules:
-- scene must be Japanese.
-- mood must be Japanese.
-- camera must be Japanese.
-- time must be Japanese.
-- style must be Japanese.
-- reason_ja must be Japanese and maximum 2 short sentences.
+- romance_mode off -> romance must be none.
+- If two humans exist and romance_mode is on, romance must NOT be none.
+- Romance must always match romance_level.
+- Never generate explicit content.
 
-Human Count Rules:
-- If two or more humans are visible in the uploaded image or images, subject_type must be couple.
-- If two separate human reference images are uploaded, subject_type must be couple.
-- If only one human is visible, subject_type must be person.
-- Do not classify two visible humans as person.
-- Do not ignore the second human.
+Output Rules
 
-Romance Rules:
-- If romance_mode is off, romance must be none.
-- If romance_mode is on and two or more humans are visible, romance must NOT be none.
-- If romance_mode is on and two separate human reference images are uploaded, romance must NOT be none.
-- If romance_mode is on and romance_level is soft, choose holding hands, looking into each other's eyes, or warm hug.
-- If romance_mode is on and romance_level is romantic, choose warm hug, forehead kiss, dancing together, or looking into each other's eyes.
-- If romance_mode is on and romance_level is passionate, choose warm hug, gentle kiss, embracing in the rain, or looking into each other's eyes.
-- If romance_mode is on but only one human is visible and no second human reference image exists, romance must be none.
-- Never generate explicit or sexual content.
-- Romance must be tasteful, cinematic, and non-explicit.
-
-Image Fidelity Rules:
-- Use only visible background elements.
-- Do not add torii gates unless clearly visible.
-- Do not add temples unless clearly visible.
-- Do not add full moon unless clearly visible.
-- Do not add roads, mountains, forests, or buildings unless visible.
-- Preserve identity.
-- Preserve clothing.
-- Preserve hairstyle.
-- Preserve accessories.
-- Preserve visible objects.
-- Preserve visible creatures.
-- Preserve atmosphere.
-- Do not invent unnecessary characters.
-
-Good Examples:
-scene: 室内のベッドルーム
-mood: 穏やかで温かい
-camera: ドリーショット
-time: 室内照明
-style: 映画風
-reason_ja: 画像に写る2人の雰囲気を活かし、自然で控えめなロマンス演出を選びました。
+- scene: Japanese
+- mood: Japanese
+- camera: Japanese
+- time: Japanese
+- style: Japanese
+- reason_ja: Japanese, within 2 short sentences.
+- service must always be Kling.
 
 Return valid JSON only.
-Do not use markdown.
-Do not use code fences.
-Do not use line breaks inside JSON string values.
 """
 
 
@@ -139,12 +131,14 @@ def build_parts(
     photo2_type=None,
     romance_mode="off",
     romance_level="soft",
+    user_situation="",
 ):
     parts = [
         types.Part.from_text(
             text=build_ai_select_prompt(
                 romance_mode,
                 romance_level,
+                user_situation,
             )
         ),
         types.Part.from_bytes(

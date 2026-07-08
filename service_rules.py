@@ -1,57 +1,145 @@
-# service_rules.py
+# ai_select.py
+
+import json
 
 from google.genai import types
 
 
-def generate_config(json_mode=False):
+def build_ai_select_prompt(romance_mode, romance_level):
+    return f"""
+You are AI Select, the planning engine of Movie_AI.
 
-    if json_mode:
-        return types.GenerateContentConfig(
-            temperature=0.30,
-            top_p=0.90,
-            max_output_tokens=1000,
-            response_mime_type="application/json",
-        )
+Brand
 
-    return types.GenerateContentConfig(
-        temperature=0.50,
-        top_p=0.90,
-        max_output_tokens=2100,
-    )
+Movie_AI
+
+One Tap Cinema
+
+指先から、まるで映画のような動画を。
+
+Mission
+
+Analyze the uploaded image or images.
+
+Create the best cinematic video plan.
+
+User Romance Setting
+
+romance_mode = {romance_mode}
+
+romance_level = {romance_level}
+
+Detect one subject type only
+
+- person
+- couple
+- pet
+- car
+- motorcycle
+- illustration
+- original_character
+- scenery
+- product
+- other
+
+Planning Rules
+
+- Preserve the original atmosphere.
+- Keep visible objects.
+- Keep visible creatures.
+- Keep clothing.
+- Keep hairstyle.
+- Keep identity.
+- Do not invent unnecessary characters.
+- Extend the environment only when natural.
+- Choose scenes current video AI can generate reliably.
+- Prefer cinematic but realistic direction.
+
+Romance Rules
+
+- If romance_mode is off, romance must be none.
+- Romance is only for humans.
+- Never generate explicit or sexual content.
+
+Return valid JSON only.
+"""
 
 
-def build_contents(parts):
-    return [
-        types.Content(
-            role="user",
-            parts=parts,
-        )
+def build_parts(
+    photo1_bytes,
+    photo1_type,
+    photo2_bytes=None,
+    photo2_type=None,
+    romance_mode="off",
+    romance_level="soft",
+):
+    parts = [
+        types.Part.from_text(
+            text=build_ai_select_prompt(
+                romance_mode,
+                romance_level,
+            )
+        ),
+        types.Part.from_bytes(
+            data=photo1_bytes,
+            mime_type=photo1_type or "image/jpeg",
+        ),
     ]
 
+    if photo2_bytes:
+        parts.append(
+            types.Part.from_bytes(
+                data=photo2_bytes,
+                mime_type=photo2_type or "image/jpeg",
+            )
+        )
 
-def recommend_request(client, model, parts, schema):
-
-    return client.models.generate_content(
-        model=model,
-        contents=build_contents(parts),
-        config=types.GenerateContentConfig(
-            temperature=0.30,
-            top_p=0.90,
-            max_output_tokens=1000,
-            response_mime_type="application/json",
-            response_schema=schema,
-        ),
-    )
+    return parts
 
 
-def prompt_request(client, model, parts):
+AI_SELECT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "subject_type": {"type": "string"},
+        "scene": {"type": "string"},
+        "mood": {"type": "string"},
+        "romance": {"type": "string"},
+        "camera": {"type": "string"},
+        "time": {"type": "string"},
+        "style": {"type": "string"},
+        "service": {"type": "string"},
+        "reason_ja": {"type": "string"},
+        "confidence": {"type": "number"},
+    },
+    "required": [
+        "subject_type",
+        "scene",
+        "mood",
+        "romance",
+        "camera",
+        "time",
+        "style",
+        "service",
+        "reason_ja",
+        "confidence",
+    ],
+}
 
-    return client.models.generate_content(
-        model=model,
-        contents=build_contents(parts),
-        config=types.GenerateContentConfig(
-            temperature=0.50,
-            top_p=0.90,
-            max_output_tokens=2100,
-        ),
-    )
+
+def parse_plan(response):
+    if hasattr(response, "parsed") and response.parsed:
+        if isinstance(response.parsed, dict):
+            return response.parsed
+
+        if hasattr(response.parsed, "model_dump"):
+            return response.parsed.model_dump()
+
+        return dict(response.parsed)
+
+    if not response.text:
+        raise ValueError("AI Selectから返答がありませんでした。")
+
+    cleaned = response.text.strip()
+    cleaned = cleaned.replace("```json", "").replace("```", "").strip()
+
+    return json.loads(cleaned)

@@ -1,35 +1,34 @@
-# ai_select.py
-
-import json
-import re
-
 from google.genai import types
 
+from plan_parser import parse_plan
 
-DISPLAY_JA = {
-    "subject_type": {
-        "person": "人物",
-        "couple": "人物",
-        "pet": "ペット",
-        "car": "車",
-        "motorcycle": "バイク",
-        "illustration": "イラスト",
-        "original_character": "オリジナルキャラ",
-        "scenery": "風景",
-        "product": "商品",
-        "other": "その他",
+
+AI_SELECT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "subject_type": {"type": "string"},
+        "scene": {"type": "string"},
+        "mood": {"type": "string"},
+        "romance": {"type": "string"},
+        "camera": {"type": "string"},
+        "time": {"type": "string"},
+        "style": {"type": "string"},
+        "service": {"type": "string"},
+        "reason_ja": {"type": "string"},
+        "confidence": {"type": "number"},
     },
-    "romance": {
-        "none": "なし",
-        "holding hands": "手をつなぐ",
-        "warm hug": "ハグ",
-        "gentle kiss": "キス",
-        "forehead kiss": "おでこキス",
-        "looking into each other's eyes": "見つめ合う",
-        "proposal": "プロポーズ",
-        "dancing together": "ダンス",
-        "embracing in the rain": "雨の中で抱き合う",
-    },
+    "required": [
+        "subject_type",
+        "scene",
+        "mood",
+        "romance",
+        "camera",
+        "time",
+        "style",
+        "service",
+        "reason_ja",
+        "confidence",
+    ],
 }
 
 
@@ -78,22 +77,22 @@ embracing in the rain
 service must always be:
 Kling
 
-Everything else MUST be written in natural Japanese.
+Everything else should be natural Japanese.
 
-scene:
-例）夜の日本の街並み
+scene example:
+夜の日本の街並み
 
-mood:
-例）神秘的で不気味
+mood example:
+神秘的で不気味
 
-camera:
-例）ドリーショット
+camera example:
+ドリーショット
 
-time:
-例）夜
+time example:
+夜
 
-style:
-例）和風ダークファンタジー
+style example:
+和風ダークファンタジー
 
 reason_ja:
 2文以内。
@@ -143,137 +142,3 @@ def build_parts(
         )
 
     return parts
-
-
-AI_SELECT_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "subject_type": {"type": "string"},
-        "scene": {"type": "string"},
-        "mood": {"type": "string"},
-        "romance": {"type": "string"},
-        "camera": {"type": "string"},
-        "time": {"type": "string"},
-        "style": {"type": "string"},
-        "service": {"type": "string"},
-        "reason_ja": {"type": "string"},
-        "confidence": {"type": "number"},
-    },
-    "required": [
-        "subject_type",
-        "scene",
-        "mood",
-        "romance",
-        "camera",
-        "time",
-        "style",
-        "service",
-        "reason_ja",
-        "confidence",
-    ],
-}
-
-
-def _find_value(text, key, default):
-    pattern = rf'"{key}"\s*:\s*"([^"]*)"'
-    match = re.search(pattern, text)
-
-    if match:
-        return match.group(1).strip()
-
-    number = re.search(rf'"{key}"\s*:\s*([0-9.]+)', text)
-
-    if number:
-        try:
-            return float(number.group(1))
-        except Exception:
-            pass
-
-    return default
-
-
-def _clean_reason(reason):
-    if not reason:
-        return "画像の雰囲気に合う映像プランを選びました。"
-
-    reason = str(reason).replace("\n", " ").strip()
-
-    sentences = re.split(r"(?<=[。！？])", reason)
-
-    return "".join(sentences[:2]).strip()
-
-
-def normalize_plan(plan):
-
-    plan["service"] = "Kling"
-
-    if not plan.get("romance"):
-        plan["romance"] = "none"
-
-    plan["subject_type"] = DISPLAY_JA["subject_type"].get(
-        str(plan.get("subject_type", "")).lower(),
-        plan.get("subject_type", "その他"),
-    )
-
-    plan["romance"] = DISPLAY_JA["romance"].get(
-        str(plan.get("romance", "")).lower(),
-        plan.get("romance", "なし"),
-    )
-
-    plan["reason_ja"] = _clean_reason(
-        plan.get("reason_ja")
-    )
-
-    return plan
-
-
-def _fallback_plan(text):
-
-    plan = {
-        "subject_type": _find_value(text, "subject_type", "other"),
-        "scene": _find_value(text, "scene", "夜の街"),
-        "mood": _find_value(text, "mood", "映画風"),
-        "romance": _find_value(text, "romance", "none"),
-        "camera": _find_value(text, "camera", "ドリーショット"),
-        "time": _find_value(text, "time", "夜"),
-        "style": _find_value(text, "style", "映画風"),
-        "service": "Kling",
-        "reason_ja": _find_value(
-            text,
-            "reason_ja",
-            "画像の雰囲気に合う映像プランを選びました。",
-        ),
-        "confidence": _find_value(text, "confidence", 4),
-    }
-
-    return normalize_plan(plan)
-
-
-def parse_plan(response):
-
-    if hasattr(response, "parsed") and response.parsed:
-
-        if isinstance(response.parsed, dict):
-            return normalize_plan(response.parsed)
-
-        if hasattr(response.parsed, "model_dump"):
-            return normalize_plan(
-                response.parsed.model_dump()
-            )
-
-    if not response.text:
-        raise ValueError("AI Selectから返答がありませんでした。")
-
-    cleaned = (
-        response.text
-        .replace("```json", "")
-        .replace("```", "")
-        .strip()
-    )
-
-    try:
-        return normalize_plan(
-            json.loads(cleaned)
-        )
-    except Exception:
-        return _fallback_plan(cleaned)

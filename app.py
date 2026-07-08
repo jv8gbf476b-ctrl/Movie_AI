@@ -1,5 +1,3 @@
-# app.py
-
 import json
 import os
 
@@ -10,10 +8,15 @@ from google.genai import types
 from ai_select import (
     AI_SELECT_SCHEMA,
     build_parts,
+)
+
+from plan_parser import (
     parse_plan,
 )
 
-from prompt_engine import build_prompt
+from prompt_engine import (
+    build_prompt,
+)
 
 from service_rules import (
     recommend_request,
@@ -92,8 +95,10 @@ def recommend():
             AI_SELECT_SCHEMA,
         )
 
+        plan = parse_plan(response)
+
         return jsonify({
-            "plan": parse_plan(response)
+            "plan": plan
         })
 
     except Exception as e:

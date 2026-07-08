@@ -5,9 +5,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Movie_AI | AI Select</title>
+<title>Movie_AI | One Tap Cinema</title>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=ais1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=sprint23">
 </head>
 
 <body>
@@ -16,7 +16,12 @@
 
 <header>
 <h1>🎬 Movie_AI</h1>
-<p>Powered by AI Select</p>
+
+<h2>One Tap Cinema</h2>
+
+<p>指先から、まるで映画のような動画を。</p>
+
+<small>Powered by AI Select</small>
 </header>
 
 <main>
@@ -31,60 +36,96 @@
 <label>画像②（任意）</label>
 <input type="file" id="photo2" accept="image/*">
 <img id="preview2" class="preview">
+
 </section>
 
 <section class="card">
+
 <h2>✨ AI Select</h2>
 
 <label>ロマンス</label>
+
 <select id="romanceMode">
 <option value="off">OFF：恋愛演出なし</option>
 <option value="on">ON：恋愛演出あり</option>
 </select>
 
 <label>ロマンス強度</label>
+
 <select id="romanceLevel">
 <option value="soft">控えめ</option>
 <option value="romantic">ロマンチック</option>
 <option value="passionate">情熱的</option>
 </select>
 
-<button id="selectBtn">✨ AI Select</button>
+<button id="selectBtn">
+✨ AI Select
+</button>
+
 </section>
 
 <section class="card" id="planCard">
+
 <h2>📋 AI Plan</h2>
 
 <div class="planBox">
+
 <p><strong>被写体：</strong><span id="planSubject">未選択</span></p>
+
 <p><strong>シーン：</strong><span id="planScene">未選択</span></p>
+
 <p><strong>雰囲気：</strong><span id="planMood">未選択</span></p>
+
 <p><strong>ロマンス：</strong><span id="planRomance">未選択</span></p>
+
 <p><strong>カメラ：</strong><span id="planCamera">未選択</span></p>
+
 <p><strong>時間帯：</strong><span id="planTime">未選択</span></p>
+
 <p><strong>スタイル：</strong><span id="planStyle">未選択</span></p>
+
 <p><strong>動画AI：</strong><span id="planService">未選択</span></p>
+
 </div>
 
 <div class="reasonBox">
+
 <h3>💬 AIコメント</h3>
-<p id="planReason">AI Selectを実行すると、ここにおすすめ理由が表示されます。</p>
+
+<p id="planReason">
+AI Selectを実行すると、おすすめ理由が表示されます。
+</p>
+
 </div>
 
-<button id="generateBtn">🎬 このプランでプロンプト生成</button>
+<button id="generateBtn">
+🎬 このプランでプロンプト生成
+</button>
+
 </section>
 
 <section class="card">
-<h2>🧠 生成結果</h2>
-<textarea id="result" placeholder="ここにAI生成プロンプトが出るよ"></textarea>
-<button id="copyBtn" class="subButton">📋 コピー</button>
+
+<h2>🧠 Prompt</h2>
+
+<textarea
+id="result"
+placeholder="ここにMovie_AIが生成したプロンプトが表示されます。"></textarea>
+
+<button
+id="copyBtn"
+class="subButton">
+📋 コピー
+</button>
+
 </section>
 
 </main>
 
 </div>
 
-<script src="{{ url_for('static', filename='js/script.js') }}?v=ais1"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}?v=sprint23"></script>
 
 </body>
+
 </html>

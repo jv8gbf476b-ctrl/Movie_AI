@@ -1,6 +1,21 @@
-# service_rules.py
-
 from google.genai import types
+
+
+def generate_config(json_mode=False):
+
+    if json_mode:
+        return types.GenerateContentConfig(
+            temperature=0.20,
+            top_p=0.85,
+            max_output_tokens=1200,
+            response_mime_type="application/json",
+        )
+
+    return types.GenerateContentConfig(
+        temperature=0.40,
+        top_p=0.85,
+        max_output_tokens=1800,
+    )
 
 
 def build_contents(parts):
@@ -13,13 +28,14 @@ def build_contents(parts):
 
 
 def recommend_request(client, model, parts, schema):
+
     return client.models.generate_content(
         model=model,
         contents=build_contents(parts),
         config=types.GenerateContentConfig(
-            temperature=0.30,
-            top_p=0.90,
-            max_output_tokens=1000,
+            temperature=0.20,
+            top_p=0.85,
+            max_output_tokens=1200,
             response_mime_type="application/json",
             response_schema=schema,
         ),
@@ -27,12 +43,13 @@ def recommend_request(client, model, parts, schema):
 
 
 def prompt_request(client, model, parts):
+
     return client.models.generate_content(
         model=model,
         contents=build_contents(parts),
         config=types.GenerateContentConfig(
-            temperature=0.50,
-            top_p=0.90,
-            max_output_tokens=2100,
+            temperature=0.40,
+            top_p=0.85,
+            max_output_tokens=1800,
         ),
     )

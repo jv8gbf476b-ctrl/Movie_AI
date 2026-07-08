@@ -33,70 +33,6 @@ DISPLAY_JA = {
 }
 
 
-KEYWORD_JA = {
-    "scene": [
-        ("beach", "海辺"),
-        ("ocean", "海辺"),
-        ("sea", "海辺"),
-        ("city", "夜景の街"),
-        ("street", "街並み"),
-        ("japanese", "日本の街並み"),
-        ("night", "夜の街"),
-        ("mountain", "峠"),
-        ("pass", "峠"),
-        ("circuit", "サーキット"),
-        ("race", "サーキット"),
-        ("park", "公園"),
-        ("cafe", "カフェ"),
-        ("festival", "夏祭り"),
-        ("shrine", "神社"),
-        ("temple", "寺院"),
-    ],
-    "mood": [
-        ("dark fantasy", "ダークファンタジー"),
-        ("mysterious", "神秘的"),
-        ("eerie", "不気味"),
-        ("romantic", "ロマンチック"),
-        ("emotional", "感動的"),
-        ("cool", "クール"),
-        ("cute", "かわいい"),
-        ("dramatic", "ドラマチック"),
-        ("cinematic", "映画風"),
-    ],
-    "camera": [
-        ("medium", "ミディアムショット"),
-        ("close", "クローズアップ"),
-        ("drone", "ドローン撮影"),
-        ("tracking", "追従カメラ"),
-        ("dolly", "ゆっくり寄るカメラ"),
-        ("handheld", "手持ちカメラ"),
-        ("low angle", "ローアングル"),
-        ("wide", "ワイドショット"),
-    ],
-    "time": [
-        ("night", "夜"),
-        ("full moon", "満月の夜"),
-        ("moon", "月夜"),
-        ("sunset", "夕方"),
-        ("golden", "夕方"),
-        ("morning", "朝"),
-        ("day", "昼"),
-        ("rain", "雨"),
-        ("snow", "雪"),
-        ("cinematic lighting", "映画風ライティング"),
-    ],
-    "style": [
-        ("japanese dark fantasy", "和風ダークファンタジー"),
-        ("dark fantasy", "ダークファンタジー"),
-        ("anime", "アニメ風"),
-        ("ukiyo", "浮世絵風"),
-        ("music video", "MV風"),
-        ("cinematic", "映画風"),
-        ("realistic", "リアル"),
-    ],
-}
-
-
 def build_ai_select_prompt(romance_mode, romance_level):
     return f"""
 You are AI Select, the planning engine of Movie_AI.
@@ -114,30 +50,66 @@ User Romance Setting:
 romance_mode = {romance_mode}
 romance_level = {romance_level}
 
-Detect one subject type only:
-person, couple, pet, car, motorcycle, illustration, original_character, scenery, product, other
+Return JSON only.
 
-Planning Rules:
-- Preserve the original atmosphere.
-- Keep visible objects.
-- Keep visible creatures.
-- Keep clothing.
-- Keep hairstyle.
-- Keep identity.
-- Do not invent unnecessary characters.
-- Extend the environment only when natural.
-- Choose scenes current video AI can generate reliably.
-- Prefer cinematic but realistic direction.
-- service must be Kling.
-- reason_ja must be short Japanese, maximum 2 sentences.
+subject_type must be one of:
+person
+couple
+pet
+car
+motorcycle
+illustration
+original_character
+scenery
+product
+other
 
-Romance Rules:
+romance must be one of:
+none
+holding hands
+warm hug
+gentle kiss
+forehead kiss
+looking into each other's eyes
+proposal
+dancing together
+embracing in the rain
+
+service must always be:
+Kling
+
+Everything else MUST be written in natural Japanese.
+
+scene:
+例）夜の日本の街並み
+
+mood:
+例）神秘的で不気味
+
+camera:
+例）ドリーショット
+
+time:
+例）夜
+
+style:
+例）和風ダークファンタジー
+
+reason_ja:
+2文以内。
+短く自然な日本語。
+
+Rules:
+- Preserve identity.
+- Preserve clothing.
+- Preserve hairstyle.
+- Preserve visible objects.
+- Preserve visible creatures.
+- Preserve atmosphere.
+- No unnecessary characters.
+- No explicit content.
+- Romance only for humans.
 - If romance_mode is off, romance must be none.
-- Romance is only for humans.
-- Never generate explicit or sexual content.
-
-Return valid JSON only.
-Do not use line breaks inside JSON string values.
 """
 
 
@@ -203,90 +175,73 @@ AI_SELECT_SCHEMA = {
 
 
 def _find_value(text, key, default):
-    pattern = rf'"{key}"\s*:\s*"([^"]*)'
+    pattern = rf'"{key}"\s*:\s*"([^"]*)"'
     match = re.search(pattern, text)
 
     if match:
         return match.group(1).strip()
 
-    pattern_number = rf'"{key}"\s*:\s*([0-9.]+)'
-    match_number = re.search(pattern_number, text)
+    number = re.search(rf'"{key}"\s*:\s*([0-9.]+)', text)
 
-    if match_number:
+    if number:
         try:
-            return float(match_number.group(1))
-        except ValueError:
-            return default
+            return float(number.group(1))
+        except Exception:
+            pass
 
     return default
 
 
-def _to_ja(category, value):
-    if not value:
-        return "未判定"
-
-    raw = str(value).strip()
-    key = raw.lower()
-
-    if category in DISPLAY_JA:
-        direct = DISPLAY_JA[category].get(key)
-        if direct:
-            return direct
-
-    for keyword, label in KEYWORD_JA.get(category, []):
-        if keyword in key:
-            return label
-
-    return raw
-
-
 def _clean_reason(reason):
     if not reason:
-        return "画像の雰囲気に合わせて、最も映える映像プランを選びました。"
+        return "画像の雰囲気に合う映像プランを選びました。"
 
     reason = str(reason).replace("\n", " ").strip()
-    sentences = re.split(r"(?<=[。.!?！？])", reason)
-    short_reason = "".join(sentences[:2]).strip()
 
-    return short_reason or reason[:80]
+    sentences = re.split(r"(?<=[。！？])", reason)
+
+    return "".join(sentences[:2]).strip()
 
 
 def normalize_plan(plan):
+
     plan["service"] = "Kling"
 
     if not plan.get("romance"):
         plan["romance"] = "none"
 
-    plan["reason_ja"] = _clean_reason(plan.get("reason_ja"))
+    plan["subject_type"] = DISPLAY_JA["subject_type"].get(
+        str(plan.get("subject_type", "")).lower(),
+        plan.get("subject_type", "その他"),
+    )
 
-    plan["display"] = {
-        "subject_type": _to_ja("subject_type", plan.get("subject_type")),
-        "scene": _to_ja("scene", plan.get("scene")),
-        "mood": _to_ja("mood", plan.get("mood")),
-        "romance": _to_ja("romance", plan.get("romance")),
-        "camera": _to_ja("camera", plan.get("camera")),
-        "time": _to_ja("time", plan.get("time")),
-        "style": _to_ja("style", plan.get("style")),
-        "service": "Kling",
-    }
+    plan["romance"] = DISPLAY_JA["romance"].get(
+        str(plan.get("romance", "")).lower(),
+        plan.get("romance", "なし"),
+    )
+
+    plan["reason_ja"] = _clean_reason(
+        plan.get("reason_ja")
+    )
 
     return plan
 
 
 def _fallback_plan(text):
+
     plan = {
         "subject_type": _find_value(text, "subject_type", "other"),
-        "scene": _find_value(text, "scene", "cinematic scene"),
-        "mood": _find_value(text, "mood", "cinematic"),
+        "scene": _find_value(text, "scene", "夜の街"),
+        "mood": _find_value(text, "mood", "映画風"),
         "romance": _find_value(text, "romance", "none"),
-        "camera": _find_value(text, "camera", "medium shot"),
-        "time": _find_value(text, "time", "cinematic lighting"),
-        "style": _find_value(text, "style", "cinematic"),
+        "camera": _find_value(text, "camera", "ドリーショット"),
+        "time": _find_value(text, "time", "夜"),
+        "style": _find_value(text, "style", "映画風"),
         "service": "Kling",
         "reason_ja": _find_value(
             text,
             "reason_ja",
-            "画像の雰囲気に合わせて、最も映える映像プランを選びました。",
+            "画像の雰囲気に合う映像プランを選びました。",
         ),
         "confidence": _find_value(text, "confidence", 4),
     }
@@ -295,25 +250,30 @@ def _fallback_plan(text):
 
 
 def parse_plan(response):
+
     if hasattr(response, "parsed") and response.parsed:
+
         if isinstance(response.parsed, dict):
             return normalize_plan(response.parsed)
 
         if hasattr(response.parsed, "model_dump"):
-            return normalize_plan(response.parsed.model_dump())
-
-        try:
-            return normalize_plan(dict(response.parsed))
-        except Exception:
-            pass
+            return normalize_plan(
+                response.parsed.model_dump()
+            )
 
     if not response.text:
         raise ValueError("AI Selectから返答がありませんでした。")
 
-    cleaned = response.text.strip()
-    cleaned = cleaned.replace("```json", "").replace("```", "").strip()
+    cleaned = (
+        response.text
+        .replace("```json", "")
+        .replace("```", "")
+        .strip()
+    )
 
     try:
-        return normalize_plan(json.loads(cleaned))
+        return normalize_plan(
+            json.loads(cleaned)
+        )
     except Exception:
         return _fallback_plan(cleaned)

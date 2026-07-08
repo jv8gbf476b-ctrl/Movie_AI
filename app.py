@@ -76,6 +76,7 @@ def recommend():
 
     romance_mode = request.form.get("romanceMode", "off")
     romance_level = request.form.get("romanceLevel", "soft")
+    user_situation = request.form.get("userSituation", "").strip()
 
     try:
 
@@ -86,6 +87,7 @@ def recommend():
             photo2.mimetype if photo2 else None,
             romance_mode,
             romance_level,
+            user_situation,
         )
 
         response = recommend_request(
@@ -126,6 +128,13 @@ def generate():
     try:
 
         plan = json.loads(plan_json)
+
+        user_situation = request.form.get(
+            "userSituation",
+            "",
+        ).strip()
+
+        plan["user_situation"] = user_situation
 
         parts = [
             types.Part.from_text(

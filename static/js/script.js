@@ -6,6 +6,7 @@ const preview2 = document.getElementById("preview2");
 
 const romanceMode = document.getElementById("romanceMode");
 const romanceLevel = document.getElementById("romanceLevel");
+const userSituation = document.getElementById("userSituation");
 
 const selectBtn = document.getElementById("selectBtn");
 const generateBtn = document.getElementById("generateBtn");
@@ -33,120 +34,184 @@ function preview(fileInput, image) {
 
     const reader = new FileReader();
 
-    reader.onload = e => {
+    reader.onload = function (e) {
+
         image.src = e.target.result;
         image.style.display = "block";
+
     };
 
     reader.readAsDataURL(file);
+
 }
 
 function updateRomanceView() {
-    romanceLevel.disabled = romanceMode.value === "off";
+
+    romanceLevel.disabled =
+        romanceMode.value === "off";
+
 }
 
 function buildFormData() {
 
     const formData = new FormData();
 
-    formData.append("photo1", photo1.files[0]);
+    formData.append(
+        "photo1",
+        photo1.files[0]
+    );
 
     if (photo2.files[0]) {
-        formData.append("photo2", photo2.files[0]);
+
+        formData.append(
+            "photo2",
+            photo2.files[0]
+        );
+
     }
 
-    formData.append("romanceMode", romanceMode.value);
-    formData.append("romanceLevel", romanceLevel.value);
+    formData.append(
+        "romanceMode",
+        romanceMode.value
+    );
+
+    formData.append(
+        "romanceLevel",
+        romanceLevel.value
+    );
+
+    formData.append(
+        "userSituation",
+        userSituation.value.trim()
+    );
 
     return formData;
-}
 
-function setLoading(button, text) {
-    button.disabled = true;
-    button.innerText = text;
-}
-
-function resetButton(button, text) {
-    button.disabled = false;
-    button.innerText = text;
 }
 
 function renderPlan(plan) {
 
     currentPlan = plan;
 
-    planSubject.textContent = plan.subject_type || "未判定";
-    planScene.textContent = plan.scene || "未判定";
-    planMood.textContent = plan.mood || "未判定";
-    planRomance.textContent = plan.romance || "none";
-    planCamera.textContent = plan.camera || "未判定";
-    planTime.textContent = plan.time || "未判定";
-    planStyle.textContent = plan.style || "未判定";
-    planService.textContent = plan.service || "Kling";
-    planReason.textContent = plan.reason_ja || "AIコメントはありません。";
+    planSubject.innerText = plan.subject_type || "未判定";
+    planScene.innerText = plan.scene || "未判定";
+    planMood.innerText = plan.mood || "未判定";
+    planRomance.innerText = plan.romance || "未判定";
+    planCamera.innerText = plan.camera || "未判定";
+    planTime.innerText = plan.time || "未判定";
+    planStyle.innerText = plan.style || "未判定";
+    planService.innerText = plan.service || "Kling";
+
+    planReason.innerText =
+        plan.reason_ja ||
+        "おすすめ理由はありません。";
+
 }
 
-photo1.addEventListener("change", () => preview(photo1, preview1));
-photo2.addEventListener("change", () => preview(photo2, preview2));
+photo1.addEventListener(
+    "change",
+    () => preview(photo1, preview1)
+);
 
-romanceMode.addEventListener("change", updateRomanceView);
+photo2.addEventListener(
+    "change",
+    () => preview(photo2, preview2)
+);
 
-selectBtn.addEventListener("click", async () => {
+romanceMode.addEventListener(
+    "change",
+    updateRomanceView
+);
 
-    if (!photo1.files.length) {
-        alert("画像①を選択してください。");
-        return;
-    }
+selectBtn.addEventListener(
+    "click",
+    async () => {
 
-    setLoading(selectBtn, "🤖 AI分析中...");
+        if (!photo1.files[0]) {
 
-    result.value = "";
-    planReason.textContent = "AI Selectが分析しています...";
+            alert("画像①を選んでください");
 
-    try {
+            return;
 
-        const response = await fetch("/recommend", {
-            method: "POST",
-            body: buildFormData()
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || "AI Selectに失敗しました。");
         }
 
-        renderPlan(data.plan);
+        selectBtn.disabled = true;
+        selectBtn.innerText = "分析中...";
 
-    } catch (e) {
+        result.value = "";
 
-        planReason.textContent = e.message;
+        planReason.innerText =
+            "AI Selectが画像を分析しています...";
 
-    } finally {
+        try {
 
-        resetButton(selectBtn, "✨ AI Select");
+            const response = await fetch(
+                "/recommend",
+                {
+                    method: "POST",
+                    body: buildFormData()
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+
+                planReason.innerText =
+                    data.error || "エラー";
+
+                return;
+
+            }
+
+            renderPlan(data.plan);
+
+        }
+
+        catch (error) {
+
+            planReason.innerText =
+                error.message;
+
+        }
+
+        finally {
+
+            selectBtn.disabled = false;
+            selectBtn.innerText = "✨ AI Select";
+
+        }
 
     }
+);
 
-});
+generateBtn.addEventListener(
+    "click",
+    async () => {
 
-generateBtn.addEventListener("click", async () => {
+        if (!photo1.files[0]) {
 
-    if (!photo1.files.length) {
-        alert("画像①を選択してください。");
-        return;
-    }
+            alert("画像①を選んでください");
 
-    if (!currentPlan) {
-        alert("先にAI Selectを実行してください。");
-        return;
-    }
+            return;
 
-    setLoading(generateBtn, "🎬 生成中...");
+        }
 
-    result.value = "Movie_AIが映画品質のプロンプトを生成しています...";
+        if (!currentPlan) {
 
-    try {
+            alert(
+                "先にAI Selectを実行してください"
+            );
+
+            return;
+
+        }
+
+        generateBtn.disabled = true;
+        generateBtn.innerText = "生成中...";
+
+        result.value =
+            "プロンプト生成中...";
 
         const formData = buildFormData();
 
@@ -155,46 +220,71 @@ generateBtn.addEventListener("click", async () => {
             JSON.stringify(currentPlan)
         );
 
-        const response = await fetch("/generate", {
-            method: "POST",
-            body: formData
-        });
+        try {
 
-        const data = await response.json();
+            const response = await fetch(
+                "/generate",
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
 
-        if (!response.ok) {
-            throw new Error(data.error || "プロンプト生成に失敗しました。");
+            const data = await response.json();
+
+            if (!response.ok) {
+
+                result.value =
+                    data.error || "エラー";
+
+                return;
+
+            }
+
+            result.value = data.prompt;
+
         }
 
-        result.value = data.prompt || "";
+        catch (error) {
 
-    } catch (e) {
+            result.value =
+                error.message;
 
-        result.value = e.message;
+        }
 
-    } finally {
+        finally {
 
-        resetButton(
-            generateBtn,
-            "🎬 このプランでプロンプト生成"
-        );
+            generateBtn.disabled = false;
+
+            generateBtn.innerText =
+                "🎬 このプランでプロンプト生成";
+
+        }
 
     }
+);
 
-});
+copyBtn.addEventListener(
+    "click",
+    async () => {
 
-copyBtn.addEventListener("click", async () => {
+        if (!result.value) return;
 
-    if (!result.value.trim()) return;
+        await navigator.clipboard.writeText(
+            result.value
+        );
 
-    await navigator.clipboard.writeText(result.value);
+        copyBtn.innerText =
+            "✅ コピー完了";
 
-    copyBtn.textContent = "✅ コピー完了";
+        setTimeout(() => {
 
-    setTimeout(() => {
-        copyBtn.textContent = "📋 コピー";
-    }, 1500);
+            copyBtn.innerText =
+                "📋 コピー";
 
-});
+        }, 1500);
+
+    }
+);
 
 updateRomanceView();

@@ -6,6 +6,77 @@ import re
 from google.genai import types
 
 
+DISPLAY_JA = {
+    "subject_type": {
+        "person": "人物",
+        "couple": "人物",
+        "pet": "ペット",
+        "car": "車",
+        "motorcycle": "バイク",
+        "illustration": "イラスト",
+        "original_character": "オリジナルキャラ",
+        "scenery": "風景",
+        "product": "商品",
+        "other": "その他",
+    },
+    "scene": {
+        "cinematic night street": "映画風の夜の街",
+        "dark japanese street": "日本の夜の街",
+        "beach": "海辺",
+        "city night": "夜景",
+        "mountain pass": "峠",
+        "race circuit": "サーキット",
+        "park": "公園",
+        "music video stage": "MV風ステージ",
+    },
+    "mood": {
+        "cinematic": "映画風",
+        "dark fantasy": "ダークファンタジー",
+        "romantic": "ロマンチック",
+        "emotional": "感動的",
+        "cool": "クール",
+        "cute": "かわいい",
+        "dramatic": "ドラマチック",
+    },
+    "camera": {
+        "cinematic medium shot": "映画風ミディアムショット",
+        "medium shot": "ミディアムショット",
+        "close up": "クローズアップ",
+        "drone shot": "ドローン撮影",
+        "tracking shot": "追従カメラ",
+        "slow dolly in": "ゆっくり寄るカメラ",
+        "handheld": "手持ちカメラ",
+    },
+    "time": {
+        "night": "夜",
+        "sunset": "夕方",
+        "morning": "朝",
+        "daytime": "昼",
+        "rainy night": "雨の夜",
+        "cinematic lighting": "映画風ライティング",
+    },
+    "style": {
+        "cinematic": "映画風",
+        "dark fantasy": "ダークファンタジー",
+        "japanese dark fantasy": "和風ダークファンタジー",
+        "music video": "MV風",
+        "anime": "アニメ風",
+        "realistic": "リアル",
+    },
+    "romance": {
+        "none": "なし",
+        "holding hands": "手をつなぐ",
+        "warm hug": "ハグ",
+        "gentle kiss": "キス",
+        "forehead kiss": "おでこキス",
+        "looking into each other's eyes": "見つめ合う",
+        "proposal": "プロポーズ",
+        "dancing together": "ダンス",
+        "embracing in the rain": "雨の中で抱き合う",
+    },
+}
+
+
 def build_ai_select_prompt(romance_mode, romance_level):
     return f"""
 You are AI Select, the planning engine of Movie_AI.
@@ -38,6 +109,7 @@ Planning Rules:
 - Choose scenes current video AI can generate reliably.
 - Prefer cinematic but realistic direction.
 - service must be Kling.
+- reason_ja must be short Japanese, maximum 2 sentences.
 
 Romance Rules:
 - If romance_mode is off, romance must be none.
@@ -129,8 +201,49 @@ def _find_value(text, key, default):
     return default
 
 
+def _to_ja(category, value):
+    if not value:
+        return "未判定"
+
+    key = str(value).strip().lower()
+    return DISPLAY_JA.get(category, {}).get(key, value)
+
+
+def _clean_reason(reason):
+    if not reason:
+        return "画像の雰囲気に合わせて、最も映える映像プランを選びました。"
+
+    reason = str(reason).replace("\n", " ").strip()
+    sentences = re.split(r"(?<=[。.!?！？])", reason)
+    short_reason = "".join(sentences[:2]).strip()
+
+    return short_reason or reason[:80]
+
+
+def normalize_plan(plan):
+    plan["service"] = "Kling"
+
+    if not plan.get("romance"):
+        plan["romance"] = "none"
+
+    plan["reason_ja"] = _clean_reason(plan.get("reason_ja"))
+
+    plan["display"] = {
+        "subject_type": _to_ja("subject_type", plan.get("subject_type")),
+        "scene": _to_ja("scene", plan.get("scene")),
+        "mood": _to_ja("mood", plan.get("mood")),
+        "romance": _to_ja("romance", plan.get("romance")),
+        "camera": _to_ja("camera", plan.get("camera")),
+        "time": _to_ja("time", plan.get("time")),
+        "style": _to_ja("style", plan.get("style")),
+        "service": "Kling",
+    }
+
+    return plan
+
+
 def _fallback_plan(text):
-    return {
+    plan = {
         "subject_type": _find_value(text, "subject_type", "other"),
         "scene": _find_value(text, "scene", "cinematic scene"),
         "mood": _find_value(text, "mood", "cinematic"),
@@ -147,17 +260,19 @@ def _fallback_plan(text):
         "confidence": _find_value(text, "confidence", 4),
     }
 
+    return normalize_plan(plan)
+
 
 def parse_plan(response):
     if hasattr(response, "parsed") and response.parsed:
         if isinstance(response.parsed, dict):
-            return response.parsed
+            return normalize_plan(response.parsed)
 
         if hasattr(response.parsed, "model_dump"):
-            return response.parsed.model_dump()
+            return normalize_plan(response.parsed.model_dump())
 
         try:
-            return dict(response.parsed)
+            return normalize_plan(dict(response.parsed))
         except Exception:
             pass
 
@@ -168,6 +283,6 @@ def parse_plan(response):
     cleaned = cleaned.replace("```json", "").replace("```", "").strip()
 
     try:
-        return json.loads(cleaned)
+        return normalize_plan(json.loads(cleaned))
     except Exception:
         return _fallback_plan(cleaned)

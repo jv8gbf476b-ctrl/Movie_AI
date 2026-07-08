@@ -5,9 +5,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Movie_AI | One Tap Cinema</title>
+<title>Movie_AI | AI Select</title>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=sprint23">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=sprint4">
 </head>
 
 <body>
@@ -16,12 +16,7 @@
 
 <header>
 <h1>🎬 Movie_AI</h1>
-
-<h2>One Tap Cinema</h2>
-
-<p>指先から、まるで映画のような動画を。</p>
-
-<small>Powered by AI Select</small>
+<p>Powered by AI Select</p>
 </header>
 
 <main>
@@ -36,31 +31,35 @@
 <label>画像②（任意）</label>
 <input type="file" id="photo2" accept="image/*">
 <img id="preview2" class="preview">
-
 </section>
 
 <section class="card">
-
 <h2>✨ AI Select</h2>
 
 <label>ロマンス</label>
-
 <select id="romanceMode">
 <option value="off">OFF：恋愛演出なし</option>
 <option value="on">ON：恋愛演出あり</option>
 </select>
 
 <label>ロマンス強度</label>
-
 <select id="romanceLevel">
 <option value="soft">控えめ</option>
 <option value="romantic">ロマンチック</option>
 <option value="passionate">情熱的</option>
 </select>
 
-<button id="selectBtn">
-✨ AI Select
-</button>
+<label>🎬 シチュエーション（任意）</label>
+<textarea
+id="userSituation"
+rows="4"
+placeholder="例）
+夜の海辺で映画のラストシーンのように
+桜並木を歩きながら笑い合う
+雨の渋谷で再会する
+宇宙船の中で会話する"></textarea>
+
+<button id="selectBtn">✨ AI Select</button>
 
 </section>
 
@@ -93,7 +92,10 @@
 <h3>💬 AIコメント</h3>
 
 <p id="planReason">
-AI Selectを実行すると、おすすめ理由が表示されます。
+
+AI Selectを実行すると、
+ここにおすすめ理由が表示されます。
+
 </p>
 
 </div>
@@ -106,16 +108,19 @@ AI Selectを実行すると、おすすめ理由が表示されます。
 
 <section class="card">
 
-<h2>🧠 Prompt</h2>
+<h2>🧠 生成結果</h2>
 
 <textarea
 id="result"
-placeholder="ここにMovie_AIが生成したプロンプトが表示されます。"></textarea>
+placeholder="ここにAI生成プロンプトが出るよ">
+</textarea>
 
 <button
 id="copyBtn"
 class="subButton">
+
 📋 コピー
+
 </button>
 
 </section>
@@ -124,8 +129,7 @@ class="subButton">
 
 </div>
 
-<script src="{{ url_for('static', filename='js/script.js') }}?v=sprint23"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}?v=sprint4"></script>
 
 </body>
-
 </html>
